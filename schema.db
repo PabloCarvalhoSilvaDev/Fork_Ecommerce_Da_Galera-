@@ -1,0 +1,569 @@
+-- ============================================================================
+-- SCRIPT UNIFICADO DE BANCO DE Dados: E-COMMERCE MULTI-LINGUAGEM BLINDADO
+-- Compatível com: Java (Spring/JDBC), Java RMI, Node.js (JS/TS) e PHP (PDO)
+-- SGBD: PostgreSQL 15+
+-- ============================================================================
+
+BEGIN;
+
+-- ============================================================================
+-- BLOCO 1: EXTENSÕES E ISOLAMENTO DE SCHEMAS (DEFENSE-IN-DEPTH)
+-- ============================================================================
+
+-- pgcrypto: Garante funções criptográficas e geração segura de UUIDs v4.
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+-- citext: Tipo de texto Case-Insensitive. Evita que 'Ygor@email.com' (enviado pelo PHP)
+-- e 'ygor@email.com' (enviado pelo Node.js) sejam tratados como textos diferentes.
+CREATE EXTENSION IF NOT EXISTS "citext";
+
+-- SEGURANÇA (CIS Benchmark / Mitigação CVE-2018-1058):
+-- Remove a permissão padrão onde qualquer usuário pode criar objetos no schema 'public'.
+-- Isso impede ataques de sequestro de search_path (Trojan functions).
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+
+-- Isolamento lógico:
+-- 'ecommerce' guarda as tabelas de negócio acessadas pelas linguagens.
+-- 'audit' guarda o histórico forense que nenhuma aplicação tem permissão de alterar ou apagar.
+CREATE SCHEMA IF NOT EXISTS ecommerce;
+CREATE SCHEMA IF NOT EXISTS audit;
+
+-- Define o caminho de busca padrão para a execução deste script.
+SET search_path TO ecommerce, public;
+
+
+-- ============================================================================
+-- BLOCO 2: DOMÍNIOS PERSONALIZADOS E ENUMS (PADRONIZAÇÃO ENTRE LINGUAGENS)
+-- ============================================================================
+
+-- Domínio para E-mail: Centraliza a validação via Regex no banco.
+-- Se o front-end JS ou o backend PHP deixarem passar um e-mail inválido, o banco barra.
+CREATE DOMAIN ecommerce.email_address AS CITEXT
+    CHECK (VALUE ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
+
+-- Domínio Monetário: Usa NUMERIC(12,2) para evitar erros de ponto flutuante (IEEE 754)
+-- típicos do Number no JavaScript ou double no Java/PHP. Impede valores negativos.
+CREATE DOMAIN ecommerce.positive_money AS NUMERIC(12, 2)
+    CHECK (VALUE >= 0.00);
+
+-- ENUMs: Impedem que cada linguagem invente um nome de status diferente
+-- (ex: Java manda 'PAID', PHP manda 'PAGO', JS manda 'paid').
+CREATE TYPE ecommerce.order_status AS ENUM (
+    'PENDING',      -- Pedido criado, aguardando pagamento
+    'PAID',         -- Pagamento confirmado e estoque baixado
+    'PROCESSING',   -- Em separação no galpão
+    'SHIPPED',      -- Enviado para transportadora
+    'DELIVERED',    -- Entregue ao cliente
+    'CANCELED',     -- Cancelado antes do envio
+    'REFUNDED'      -- Estornado financeiramente
+);
+
+CREATE TYPE ecommerce.payment_method AS ENUM (
+    'PIX',
+    'CREDIT_CARD',
+    'BOLETO'
+);
+
+CREATE TYPE ecommerce.payment_status AS ENUM (
+    'PENDING',
+    'APPROVED',
+    'REFUSED',
+    'REFUNDED',
+    'CHARGEBACK'
+);
+
+
+-- ============================================================================
+-- BLOCO 3: TABELA DE AUDITORIA IMUTÁVEL (SCHEMA AUDIT)
+-- ============================================================================
+
+-- Esta tabela registra automaticamente quem fez o quê, quando e de onde.
+-- Captura variáveis de sessão como 'application_name' (para saber se veio do Java RMI,
+-- Node.js, PHP ou Java API) e 'app.current_user_id' (ID do usuário final logado).
+CREATE TABLE audit.activity_log (
+    id BIGSERIAL PRIMARY KEY,
+    schema_name TEXT NOT NULL,
+    table_name TEXT NOT NULL,
+    operation VARCHAR(10) NOT NULL, -- INSERT, UPDATE ou DELETE
+    record_id UUID,                 -- ID do registro afetado
+    app_name TEXT DEFAULT current_setting('application_name', true),
+    app_user_id TEXT DEFAULT current_setting('app.current_user_id', true),
+    db_user TEXT DEFAULT session_user,
+    client_ip INET DEFAULT inet_client_addr(),
+    old_data JSONB,                 -- Estado anterior do registro (em UPDATE/DELETE)
+    new_data JSONB,                 -- Novo estado do registro (em INSERT/UPDATE)
+    executed_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
+);
+
+-- Índices para investigação rápida de auditoria por registro ou janela de tempo.
+CREATE INDEX idx_audit_table_record ON audit.activity_log(table_name, record_id);
+CREATE INDEX idx_audit_executed_at ON audit.activity_log(executed_at);
+
+
+-- ============================================================================
+-- BLOCO 4: TABELAS DE NEGÓCIO DO E-COMMERCE (SCHEMA ECOMMERCE)
+-- ============================================================================
+
+-- 4.1. TABELA DE USUÁRIOS / CLIENTES
+CREATE TABLE ecommerce.users (
+    -- UUID v4 evita ataques de enumeração de IDs sequenciais (/users/1, /users/2)
+    -- e permite geração distribuída sem colisão entre Java RMI, Node e PHP.
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    full_name VARCHAR(150) NOT NULL CHECK (char_length(trim(full_name)) >= 3),
+    email ecommerce.email_address UNIQUE NOT NULL,
+    -- Deve armazenar hash Bcrypt ($2b$) ou Argon2id para compatibilidade entre PHP, Node e Java.
+    password_hash VARCHAR(255) NOT NULL,
+    -- Valida CPF (11 dígitos) ou CNPJ (14 dígitos) contendo exclusivamente números.
+    document_number VARCHAR(14) UNIQUE NOT NULL CHECK (document_number ~ '^[0-9]{11}([0-9]{3})?$'),
+    -- Valida telefone no padrão internacional E.164 (ex: +5561999999999 ou apenas números).
+    phone VARCHAR(20) CHECK (phone IS NULL OR phone ~ '^\+?[0-9]{10,15}$'),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    -- Soft Delete: Nunca fazemos DELETE físico de clientes para não quebrar histórico fiscal.
+    deleted_at TIMESTAMPTZ,
+    -- TIMESTAMPTZ salva sempre em UTC internamente, evitando conflito de fuso entre linguagens.
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 4.2. TABELA DE ENDEREÇOS
+CREATE TABLE ecommerce.addresses (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    -- ON DELETE RESTRICT impede apagar um usuário se houver endereços vinculados.
+    user_id UUID NOT NULL REFERENCES ecommerce.users(id) ON DELETE RESTRICT,
+    zip_code VARCHAR(8) NOT NULL CHECK (zip_code ~ '^[0-9]{8}$'), -- CEP sem traço (8 dígitos)
+    street VARCHAR(150) NOT NULL,
+    number VARCHAR(20) NOT NULL,
+    complement VARCHAR(100),
+    neighborhood VARCHAR(100) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    state CHAR(2) NOT NULL CHECK (state ~ '^[A-Z]{2}$'), -- UF em maiúsculas (ex: DF, SP)
+    is_default BOOLEAN NOT NULL DEFAULT FALSE,
+    deleted_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Índice Único Parcial: Garante no motor do banco que um cliente tenha no máximo
+-- UM endereço marcado como padrão (is_default = TRUE) entre os endereços ativos.
+CREATE UNIQUE INDEX idx_unique_default_address_per_user 
+    ON ecommerce.addresses(user_id) 
+    WHERE is_default = TRUE AND deleted_at IS NULL;
+
+-- 4.3. TABELA DE CATEGORIAS
+CREATE TABLE ecommerce.categories (
+    id SERIAL PRIMARY KEY,
+    -- Suporta árvore de subcategorias (ex: Hardware -> Placas de Vídeo).
+    parent_id INT REFERENCES ecommerce.categories(id) ON DELETE RESTRICT,
+    name VARCHAR(100) NOT NULL,
+    -- Slug validado para URLs amigáveis (apenas letras minúsculas, números e hifens).
+    slug CITEXT UNIQUE NOT NULL CHECK (slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- Impede que uma categoria seja filha dela mesma (loop infinito na árvore).
+    CONSTRAINT chk_no_self_parent CHECK (id <> parent_id)
+);
+
+-- 4.4. TABELA DE PRODUTOS
+CREATE TABLE ecommerce.products (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    category_id INT NOT NULL REFERENCES ecommerce.categories(id) ON DELETE RESTRICT,
+    sku CITEXT UNIQUE NOT NULL CHECK (char_length(trim(sku)) >= 3),
+    name VARCHAR(200) NOT NULL,
+    slug CITEXT UNIQUE NOT NULL CHECK (slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'),
+    description TEXT,
+    base_price ecommerce.positive_money NOT NULL,
+    -- INTEROPERABILIDADE CRÍTICA: Em vez de usar serialização binária do Java RMI (BYTEA),
+    -- usamos JSONB validado como objeto. Assim, Java, JS e PHP leem e filtram fichas técnicas
+    -- dinâmicas (ex: {"voltagem": "220v", "memoria_gb": 16}) nativamente.
+    attributes JSONB NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(attributes) = 'object'),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    deleted_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 4.5. TABELA DE ESTOQUE ISOLADO (ALTA CONCORRÊNCIA)
+-- Separar o estoque da tabela 'products' evita que atualizações constantes de quantidade
+-- gerem locks na tabela de catálogo durante buscas de clientes.
+CREATE TABLE ecommerce.inventory (
+    product_id UUID PRIMARY KEY REFERENCES ecommerce.products(id) ON DELETE RESTRICT,
+    quantity INT NOT NULL DEFAULT 0 CHECK (quantity >= 0),
+    reserved_quantity INT NOT NULL DEFAULT 0 CHECK (reserved_quantity >= 0),
+    -- Coluna 'version' permite Optimistic Locking no Hibernate (Java), Prisma (JS) ou PDO (PHP).
+    version INT NOT NULL DEFAULT 1,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- Regra física: o estoque reservado em carrinhos/pedidos pendentes nunca pode passar do total físico.
+    CONSTRAINT chk_reserved_within_stock CHECK (reserved_quantity <= quantity)
+);
+
+-- 4.6. TABELA DE PEDIDOS (ORDERS)
+CREATE TABLE ecommerce.orders (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    -- CHAVE DE IDEMPOTÊNCIA: Gerada pelo cliente antes de enviar a requisição.
+    -- Se o Java RMI ou o PHP sofrerem timeout de rede e tentarem reenviar o mesmo pedido,
+    -- a constraint UNIQUE barra a duplicação instantaneamente.
+    idempotency_key UUID UNIQUE NOT NULL,
+    user_id UUID NOT NULL REFERENCES ecommerce.users(id) ON DELETE RESTRICT,
+    shipping_address_id UUID NOT NULL REFERENCES ecommerce.addresses(id) ON DELETE RESTRICT,
+    -- Snapshot imutável do endereço no momento da compra (em JSONB).
+    -- Se o cliente alterar o cadastro meses depois, o histórico fiscal do pedido antigo permanece intacto.
+    shipping_address_snapshot JSONB NOT NULL CHECK (jsonb_typeof(shipping_address_snapshot) = 'object'),
+    status ecommerce.order_status NOT NULL DEFAULT 'PENDING',
+    subtotal ecommerce.positive_money NOT NULL DEFAULT 0.00,
+    shipping_cost ecommerce.positive_money NOT NULL DEFAULT 0.00,
+    discount ecommerce.positive_money NOT NULL DEFAULT 0.00,
+    -- COLUNA GERADA (STORED): O próprio PostgreSQL calcula o total.
+    -- Impede que bugs de arredondamento no JavaScript ou PHP gravem um total inconsistente.
+    total_amount NUMERIC(12, 2) GENERATED ALWAYS AS (subtotal + shipping_cost - discount) STORED,
+    -- Registra automaticamente qual serviço/linguagem abriu o pedido via conexão TCP.
+    origin_service VARCHAR(50) NOT NULL DEFAULT COALESCE(current_setting('application_name', true), 'UNKNOWN'),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- Impede que um cupom de desconto gere um pedido com valor total negativo.
+    CONSTRAINT chk_discount_limit CHECK (discount <= (subtotal + shipping_cost))
+);
+
+-- 4.7. TABELA DE ITENS DO PEDIDO
+CREATE TABLE ecommerce.order_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id UUID NOT NULL REFERENCES ecommerce.orders(id) ON DELETE RESTRICT,
+    product_id UUID NOT NULL REFERENCES ecommerce.products(id) ON DELETE RESTRICT,
+    quantity INT NOT NULL CHECK (quantity > 0),
+    -- Congela o preço unitário do produto no exato momento da venda.
+    unit_price ecommerce.positive_money NOT NULL,
+    -- Calcula automaticamente quantidade * preço unitário direto no banco.
+    total_price NUMERIC(12, 2) GENERATED ALWAYS AS (quantity * unit_price) STORED,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- Impede linhas duplicadas do mesmo produto no mesmo pedido (força somar a quantidade).
+    UNIQUE (order_id, product_id)
+);
+
+-- 4.8. TABELA DE PAGAMENTOS
+CREATE TABLE ecommerce.payments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    -- Evita cobrar o cartão ou gerar dois PIX para a mesma tentativa de pagamento.
+    idempotency_key UUID UNIQUE NOT NULL,
+    order_id UUID NOT NULL REFERENCES ecommerce.orders(id) ON DELETE RESTRICT,
+    method ecommerce.payment_method NOT NULL,
+    status ecommerce.payment_status NOT NULL DEFAULT 'PENDING',
+    amount NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
+    external_transaction_id VARCHAR(150) UNIQUE, -- ID retornado pelo Stripe, MercadoPago, Pagar.me, etc.
+    -- Armazena o webhook/retorno bruto do gateway em JSONB para qualquer linguagem auditar.
+    gateway_payload JSONB NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(gateway_payload) = 'object'),
+    paid_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+
+-- ============================================================================
+-- BLOCO 5: ÍNDICES DE PERFORMANCE E OTIMIZAÇÃO DE QUERIES
+-- ============================================================================
+
+-- Índices B-Tree para chaves estrangeiras e filtros frequentes (evita Sequential Scans).
+CREATE INDEX idx_addresses_user_id ON ecommerce.addresses(user_id);
+CREATE INDEX idx_products_category_id ON ecommerce.products(category_id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_orders_user_id ON ecommerce.orders(user_id);
+CREATE INDEX idx_orders_status ON ecommerce.orders(status);
+CREATE INDEX idx_orders_created_at ON ecommerce.orders(created_at DESC);
+CREATE INDEX idx_order_items_order_id ON ecommerce.order_items(order_id);
+CREATE INDEX idx_order_items_product_id ON ecommerce.order_items(product_id);
+CREATE INDEX idx_payments_order_id ON ecommerce.payments(order_id);
+
+-- Índice GIN (Generalized Inverted Index): Permite buscas ultra-rápidas dentro do JSONB
+-- (ex: buscar todos os produtos onde attributes @> '{"voltagem": "220v"}').
+CREATE INDEX idx_products_attributes_gin ON ecommerce.products USING GIN (attributes);
+
+
+-- ============================================================================
+-- BLOCO 6: TRIGGERS DE AUTOMAÇÃO, INTEGRIDADE FINANCEIRA E AUDITORIA
+-- ============================================================================
+
+-- 6.1. FUNÇÃO E TRIGGERS PARA ATUALIZAR 'updated_at' AUTOMATICAMENTE
+-- Evita depender que o código Java, PHP ou Node envie a data de atualização.
+CREATE OR REPLACE FUNCTION ecommerce.trg_set_updated_at()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SET search_path = ecommerce, public
+AS $$
+BEGIN
+    NEW.updated_at = clock_timestamp();
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER set_updated_at_users BEFORE UPDATE ON ecommerce.users FOR EACH ROW EXECUTE FUNCTION ecommerce.trg_set_updated_at();
+CREATE TRIGGER set_updated_at_addresses BEFORE UPDATE ON ecommerce.addresses FOR EACH ROW EXECUTE FUNCTION ecommerce.trg_set_updated_at();
+CREATE TRIGGER set_updated_at_categories BEFORE UPDATE ON ecommerce.categories FOR EACH ROW EXECUTE FUNCTION ecommerce.trg_set_updated_at();
+CREATE TRIGGER set_updated_at_products BEFORE UPDATE ON ecommerce.products FOR EACH ROW EXECUTE FUNCTION ecommerce.trg_set_updated_at();
+CREATE TRIGGER set_updated_at_inventory BEFORE UPDATE ON ecommerce.inventory FOR EACH ROW EXECUTE FUNCTION ecommerce.trg_set_updated_at();
+CREATE TRIGGER set_updated_at_orders BEFORE UPDATE ON ecommerce.orders FOR EACH ROW EXECUTE FUNCTION ecommerce.trg_set_updated_at();
+CREATE TRIGGER set_updated_at_payments BEFORE UPDATE ON ecommerce.payments FOR EACH ROW EXECUTE FUNCTION ecommerce.trg_set_updated_at();
+
+-- 6.2. FUNÇÃO E TRIGGER PARA SINCRONIZAR O SUBTOTAL DO PEDIDO AUTOMATICAMENTE
+-- Sempre que um item é inserido, alterado ou removido de 'order_items', o Postgres
+-- recalcula o 'subtotal' na tabela 'orders' (que por sua vez atualiza o 'total_amount').
+CREATE OR REPLACE FUNCTION ecommerce.trg_sync_order_subtotal()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SET search_path = ecommerce, public
+AS $$
+DECLARE
+    v_order_id UUID;
+BEGIN
+    v_order_id := COALESCE(NEW.order_id, OLD.order_id);
+
+    UPDATE ecommerce.orders
+    SET subtotal = COALESCE((
+        SELECT SUM(total_price)
+        FROM ecommerce.order_items
+        WHERE order_id = v_order_id
+    ), 0.00)
+    WHERE id = v_order_id;
+
+    RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER sync_order_subtotal
+AFTER INSERT OR UPDATE OR DELETE ON ecommerce.order_items
+FOR EACH ROW EXECUTE FUNCTION ecommerce.trg_sync_order_subtotal();
+
+-- 6.3. FUNÇÃO E TRIGGERS DE IMUTABILIDADE FINANCEIRA E DE AUDITORIA
+-- Proíbe terminantemente o comando DELETE em pedidos, pagamentos e logs de auditoria.
+CREATE OR REPLACE FUNCTION ecommerce.trg_prevent_delete()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SET search_path = ecommerce, public
+AS $$
+BEGIN
+    RAISE EXCEPTION 'VIOLAÇÃO DE SEGURANÇA CONTÁBIL: Registros da tabela %.% são imutáveis e não podem ser apagados.', TG_TABLE_SCHEMA, TG_TABLE_NAME;
+END;
+$$;
+
+CREATE TRIGGER prevent_delete_orders BEFORE DELETE ON ecommerce.orders FOR EACH ROW EXECUTE FUNCTION ecommerce.trg_prevent_delete();
+CREATE TRIGGER prevent_delete_payments BEFORE DELETE ON ecommerce.payments FOR EACH ROW EXECUTE FUNCTION ecommerce.trg_prevent_delete();
+CREATE TRIGGER prevent_tamper_audit BEFORE UPDATE OR DELETE ON audit.activity_log FOR EACH ROW EXECUTE FUNCTION ecommerce.trg_prevent_delete();
+
+-- 6.4. FUNÇÃO E TRIGGERS DE AUDITORIA INVISÍVEL (SECURITY DEFINER)
+-- 'SECURITY DEFINER' faz a função rodar com os privilégios do dono do banco (postgres),
+-- permitindo que ela escreva na tabela 'audit.activity_log' mesmo que os usuários
+-- das aplicações (Java, Node, PHP) não tenham permissão de acesso ao schema 'audit'.
+CREATE OR REPLACE FUNCTION audit.trg_record_activity()
+RETURNS TRIGGER
+SECURITY DEFINER
+SET search_path = audit, pg_temp
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF (TG_OP = 'INSERT') THEN
+        INSERT INTO audit.activity_log (schema_name, table_name, operation, record_id, new_data)
+        VALUES (TG_TABLE_SCHEMA, TG_TABLE_NAME, TG_OP, NEW.id, to_jsonb(NEW));
+        RETURN NEW;
+    ELSIF (TG_OP = 'UPDATE') THEN
+        -- Só grava log se algum dado realmente mudou (ignora updates vazios).
+        IF NEW IS DISTINCT FROM OLD THEN
+            INSERT INTO audit.activity_log (schema_name, table_name, operation, record_id, old_data, new_data)
+            VALUES (TG_TABLE_SCHEMA, TG_TABLE_NAME, TG_OP, NEW.id, to_jsonb(OLD), to_jsonb(NEW));
+        END IF;
+        RETURN NEW;
+    ELSIF (TG_OP = 'DELETE') THEN
+        INSERT INTO audit.activity_log (schema_name, table_name, operation, record_id, old_data)
+        VALUES (TG_TABLE_SCHEMA, TG_TABLE_NAME, TG_OP, OLD.id, to_jsonb(OLD));
+        RETURN OLD;
+    END IF;
+    RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER audit_users AFTER INSERT OR UPDATE OR DELETE ON ecommerce.users FOR EACH ROW EXECUTE FUNCTION audit.trg_record_activity();
+CREATE TRIGGER audit_products AFTER INSERT OR UPDATE OR DELETE ON ecommerce.products FOR EACH ROW EXECUTE FUNCTION audit.trg_record_activity();
+CREATE TRIGGER audit_orders AFTER INSERT OR UPDATE OR DELETE ON ecommerce.orders FOR EACH ROW EXECUTE FUNCTION audit.trg_record_activity();
+CREATE TRIGGER audit_payments AFTER INSERT OR UPDATE OR DELETE ON ecommerce.payments FOR EACH ROW EXECUTE FUNCTION audit.trg_record_activity();
+
+
+-- ============================================================================
+-- BLOCO 7: STORED FUNCTIONS TRANSACIONAIS (ANTI-RACE CONDITION)
+-- ============================================================================
+
+-- Centraliza a regra crítica de estoque no banco.
+-- Se o Servidor Java RMI, o backend Node.js e o checkout PHP tentarem comprar o último
+-- item do estoque no mesmo milissegundo, o 'FOR UPDATE' enfileira as transações com
+-- segurança (Pessimistic Locking) e impede venda sem estoque (overselling).
+
+-- 7.1. FUNÇÃO PARA RESERVAR ESTOQUE NA CRIAÇÃO DO PEDIDO
+CREATE OR REPLACE FUNCTION ecommerce.reservar_estoque_pedido(p_order_id UUID)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SET search_path = ecommerce, public
+AS $$
+DECLARE
+    v_item RECORD;
+    v_disponivel INT;
+BEGIN
+    -- Ordena por product_id para evitar Deadlocks quando dois pedidos reservam os mesmos produtos em ordens diferentes.
+    FOR v_item IN 
+        SELECT product_id, quantity 
+        FROM ecommerce.order_items 
+        WHERE order_id = p_order_id 
+        ORDER BY product_id
+    LOOP
+        -- Trava a linha do produto no estoque até o COMMIT/ROLLBACK.
+        SELECT (quantity - reserved_quantity) INTO v_disponivel
+        FROM ecommerce.inventory
+        WHERE product_id = v_item.product_id
+        FOR UPDATE;
+
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'Produto % não possui registro de estoque inicializado.', v_item.product_id;
+        END IF;
+
+        IF v_disponivel < v_item.quantity THEN
+            RAISE EXCEPTION 'Estoque disponível insuficiente para o produto % (Disponível: %, Solicitado: %)', 
+                v_item.product_id, v_disponivel, v_item.quantity;
+        END IF;
+
+        UPDATE ecommerce.inventory
+        SET reserved_quantity = reserved_quantity + v_item.quantity,
+            version = version + 1
+        WHERE product_id = v_item.product_id;
+    END LOOP;
+
+    RETURN TRUE;
+END;
+$$;
+
+-- 7.2. FUNÇÃO PARA CONFIRMAR BAIXA DEFINITIVA DE ESTOQUE APÓS PAGAMENTO APROVADO
+CREATE OR REPLACE FUNCTION ecommerce.confirmar_baixa_estoque(p_order_id UUID)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SET search_path = ecommerce, public
+AS $$
+DECLARE
+    v_item RECORD;
+    v_status_atual ecommerce.order_status;
+    v_estoque_atual INT;
+    v_reservado_atual INT;
+BEGIN
+    -- Trava o pedido para garantir que dois webhooks simultâneos não baixem o estoque duas vezes.
+    SELECT status INTO v_status_atual
+    FROM ecommerce.orders
+    WHERE id = p_order_id
+    FOR UPDATE;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Pedido % não encontrado.', p_order_id;
+    END IF;
+
+    -- Idempotência: se já estiver PAID, apenas retorna TRUE sem dar baixa duplicada.
+    IF v_status_atual = 'PAID' THEN
+        RETURN TRUE;
+    END IF;
+
+    IF v_status_atual <> 'PENDING' THEN
+        RAISE EXCEPTION 'Transição de status inválida: Pedido % está com status % e não pode ser confirmado.', p_order_id, v_status_atual;
+    END IF;
+
+    -- Percorre os itens ordenados por ID para prevenir Deadlock.
+    FOR v_item IN 
+        SELECT product_id, quantity 
+        FROM ecommerce.order_items 
+        WHERE order_id = p_order_id 
+        ORDER BY product_id
+    LOOP
+        SELECT quantity, reserved_quantity INTO v_estoque_atual, v_reservado_atual
+        FROM ecommerce.inventory
+        WHERE product_id = v_item.product_id
+        FOR UPDATE;
+
+        IF v_estoque_atual < v_item.quantity THEN
+            RAISE EXCEPTION 'Estoque físico insuficiente para o produto % (Físico: %, Solicitado: %)', 
+                v_item.product_id, v_estoque_atual, v_item.quantity;
+        END IF;
+
+        -- Deduz do estoque físico e libera a reserva correspondente.
+        UPDATE ecommerce.inventory
+        SET quantity = quantity - v_item.quantity,
+            reserved_quantity = GREATEST(0, reserved_quantity - v_item.quantity),
+            version = version + 1
+        WHERE product_id = v_item.product_id;
+    END LOOP;
+
+    -- Atualiza o pedido para PAGO.
+    UPDATE ecommerce.orders 
+    SET status = 'PAID'
+    WHERE id = p_order_id;
+
+    RETURN TRUE;
+END;
+$$;
+
+
+-- ============================================================================
+-- BLOCO 8: SEGURANÇA DE ACESSOS (RBAC), CREDENCIAIS POR LINGUAGEM E TIMEOUTS
+-- ============================================================================
+
+-- Cria o grupo de aplicação e os usuários específicos de cada linguagem de forma idempotente
+-- (não dá erro se você rodar o script mais de uma vez).
+DO $$
+BEGIN
+    -- Grupo base sem permissão de login direto
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'ecommerce_app_group') THEN
+        CREATE ROLE ecommerce_app_group NOLOGIN;
+    END IF;
+
+    -- Usuário exclusivo para o Backend Java (Spring Boot / Quarkus / Jakarta EE)
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'svc_java_api') THEN
+        CREATE USER svc_java_api WITH PASSWORD 'TroquePorSenhaForte_JavaAPI_2026!' IN ROLE ecommerce_app_group;
+    END IF;
+
+    -- Usuário exclusivo para o Servidor Java RMI
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'svc_java_rmi') THEN
+        CREATE USER svc_java_rmi WITH PASSWORD 'TroquePorSenhaForte_JavaRMI_2026!' IN ROLE ecommerce_app_group;
+    END IF;
+
+    -- Usuário exclusivo para o Backend JavaScript / TypeScript (Node.js)
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'svc_node_js') THEN
+        CREATE USER svc_node_js WITH PASSWORD 'TroquePorSenhaForte_NodeJS_2026!' IN ROLE ecommerce_app_group;
+    END IF;
+
+    -- Usuário exclusivo para a Aplicação PHP (Laravel / Symfony / PDO)
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'svc_php_web') THEN
+        CREATE USER svc_php_web WITH PASSWORD 'TroquePorSenhaForte_PHPWeb_2026!' IN ROLE ecommerce_app_group;
+    END IF;
+END
+$$;
+
+-- PRINCÍPIO DO MENOR PRIVILÉGIO (Least Privilege):
+-- As aplicações podem usar o schema 'ecommerce', mas NÃO têm acesso ao schema 'audit'.
+GRANT USAGE ON SCHEMA ecommerce TO ecommerce_app_group;
+
+-- Concede apenas leitura, inserção e atualização nas tabelas de negócio.
+-- O comando DELETE é omitido propositalmente (exceto em 'order_items' caso o carrinho mude antes de fechar).
+GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA ecommerce TO ecommerce_app_group;
+GRANT DELETE ON ecommerce.order_items TO ecommerce_app_group;
+
+-- Permite usar sequências (SERIAL da tabela categories) e executar as Functions transacionais.
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA ecommerce TO ecommerce_app_group;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA ecommerce TO ecommerce_app_group;
+
+-- Garante que tabelas ou sequências criadas no futuro herdem as mesmas regras automaticamente.
+ALTER DEFAULT PRIVILEGES IN SCHEMA ecommerce GRANT SELECT, INSERT, UPDATE ON TABLES TO ecommerce_app_group;
+ALTER DEFAULT PRIVILEGES IN SCHEMA ecommerce GRANT USAGE, SELECT ON SEQUENCES TO ecommerce_app_group;
+
+-- PROTEÇÃO CONTRA TRAVAMENTOS E CONEXÕES ZUMBIS ENTRE LINGUAGENS:
+-- 1. Cancela qualquer query mal otimizada que demore mais de 10 segundos.
+ALTER ROLE ecommerce_app_group SET statement_timeout = '10s';
+
+-- 2. Se uma linguagem tentar travar uma linha já em lock por outra, falha rápido após 3s em vez de congelar o pool.
+ALTER ROLE ecommerce_app_group SET lock_timeout = '3s';
+
+-- 3. CRÍTICO PARA JAVA RMI E NODE.JS: Se uma thread abrir um 'BEGIN', travar e não der 'COMMIT',
+-- o PostgreSQL encerra a sessão em 15 segundos e libera os produtos presos em lock!
+ALTER ROLE ecommerce_app_group SET idle_in_transaction_session_timeout = '15s';
+
+-- 4. Fixa o search_path do grupo para evitar que precisem digitar 'ecommerce.' antes de cada tabela.
+ALTER ROLE ecommerce_app_group SET search_path TO ecommerce, public;
+
+COMMIT;
