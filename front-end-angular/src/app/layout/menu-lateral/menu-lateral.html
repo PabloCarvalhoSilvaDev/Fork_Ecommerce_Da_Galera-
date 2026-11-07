@@ -2,11 +2,80 @@
   <div class="menu-lateral__titulo">Menu</div>
 
   <nav class="menu-lateral__nav" aria-label="Menu lateral">
-    <a routerLink="/" routerLinkActive="is-ativo" [routerLinkActiveOptions]="{ exact: true }">
-      Início
-    </a>
-    <a routerLink="/sobre" routerLinkActive="is-ativo">Sobre</a>
-    <a routerLink="/produtos" routerLinkActive="is-ativo">Produtos</a>
-    <a routerLink="/empresas" routerLinkActive="is-ativo">Empresas</a>
+
+    <section class="menu-lateral__grupo" aria-labelledby="menu-catalogo">
+      <div id="menu-catalogo" class="menu-lateral__subtitulo">Catálogo</div>
+      <a
+        routerLink="/vitrine"
+        routerLinkActive="is-ativo"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Vitrine
+      </a>
+      <a
+        routerLink="/busca"
+        routerLinkActive="is-ativo"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Busca
+      </a>
+      <a
+        routerLink="/detalhe-produto"
+        routerLinkActive="is-ativo"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Detalhes do produto
+      </a>
+    </section>
+
+    <section class="menu-lateral__grupo" aria-labelledby="menu-checkout">
+      <div id="menu-checkout" class="menu-lateral__subtitulo">Checkout</div>
+      <a
+        routerLink="/carrinho"
+        routerLinkActive="is-ativo"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Carrinho
+      </a>
+      <a
+        routerLink="/endereco"
+        routerLinkActive="is-ativo"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Endereço de entrega
+      </a>
+      <a
+        routerLink="/pagamento"
+        routerLinkActive="is-ativo"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Pagamento
+      </a>
+      <a
+        routerLink="/confirmacao"
+        routerLinkActive="is-ativo"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Confirmação da compra
+      </a>
+    </section>
+
+    <section class="menu-lateral__grupo" aria-labelledby="menu-pedidos">
+      <div id="menu-pedidos" class="menu-lateral__subtitulo">Pedidos</div>
+      <a
+        routerLink="/lista-pedidos"
+        routerLinkActive="is-ativo"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Meus pedidos
+      </a>
+      <a
+        routerLink="/detalhes-pedido"
+        routerLinkActive="is-ativo"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Detalhes do pedido
+      </a>
+    </section>
   </nav>
 </div>

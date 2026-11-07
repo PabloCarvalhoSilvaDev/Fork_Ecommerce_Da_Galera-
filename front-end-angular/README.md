@@ -41,6 +41,34 @@ src/
 └── styles.css
 ```
 
+## Estrutura das telas da loja
+
+As telas previstas no SRS estão separadas por domínio. Cada pasta contém o componente standalone (`.ts`), template (`.html`) e estilos (`.css`):
+
+```
+src/app/features/
+├── autenticacao/
+│   ├── login/
+│   ├── cadastro-cliente/
+│   ├── esqueci-senha/
+│   ├── redefinir-senha/
+│   └── escolha-contexto/
+├── catalogo/
+│   ├── vitrine/
+│   ├── busca/
+│   └── detalhe-produto/
+├── checkout/
+│   ├── carrinho/
+│   ├── endereco/
+│   ├── pagamento/
+│   └── confirmacao/
+└── pedidos/
+    ├── lista/
+    └── detalhe/
+```
+
+Esses componentes são apenas a estrutura inicial; a implementação das telas e o registro de suas rotas ainda precisam ser feitos. Logout é uma ação do cabeçalho, não uma tela. O painel `/admin/*` está fora do escopo Angular e pertence ao backoffice PHP/Laravel.
+
 ## Camadas
 
 | Pasta       | O que vai aqui                                       | O que não vai                           |
