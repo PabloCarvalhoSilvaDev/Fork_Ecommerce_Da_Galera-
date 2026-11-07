@@ -1,0 +1,107 @@
+.principal {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.principal__cabecalho {
+  display: grid;
+  grid-template-columns: 48px 1fr 160px;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: var(--cor-marca);
+  color: var(--cor-texto-invertido);
+  box-shadow: 0 2px 8px rgba(195, 0, 47, 0.28);
+}
+
+.principal__alternar {
+  border: 0;
+  background: var(--cor-superficie);
+  color: var(--cor-marca);
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  /* tamanho inteiro evita artefato de anti-aliasing no pi-bars (barra inferior “dobrada”) */
+  font-size: 16px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.principal__alternar:hover {
+  background: var(--cor-marca-suave);
+  color: var(--cor-marca-escura);
+}
+
+.principal__alternar:focus-visible {
+  outline: 2px solid var(--cor-texto-invertido);
+  outline-offset: 2px;
+}
+
+.principal__alternar .pi {
+  line-height: 1;
+  display: block;
+}
+
+.principal__marca {
+  justify-self: center;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--cor-texto-invertido);
+}
+
+.principal__marca:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.principal__usuario {
+  justify-self: end;
+  font-weight: 600;
+  color: var(--cor-texto-invertido);
+}
+
+.principal__corpo {
+  display: flex;
+  flex: 1;
+}
+
+.principal__menu {
+  width: 240px;
+  background: var(--cor-superficie);
+  border-right: 1px solid var(--cor-borda);
+  padding: 1.5rem;
+  transition:
+    width 0.2s ease,
+    padding 0.2s ease;
+  overflow: hidden;
+}
+
+.principal__menu.is-recolhido {
+  width: 0;
+  padding: 0;
+}
+
+.principal__conteudo {
+  width: min(720px, 100%);
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  flex: 1;
+}
+
+.principal__rodape {
+  padding: 0.75rem 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--cor-texto-invertido);
+  background: var(--cor-marca);
+  border-top: 1px solid var(--cor-borda);
+}
