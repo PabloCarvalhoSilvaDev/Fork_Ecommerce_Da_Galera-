@@ -72,6 +72,13 @@ CREATE TYPE ecommerce.payment_status AS ENUM (
     'CHARGEBACK'
 );
 
+-- Perfil da aplicação usado pelo Node para emitir os claims role/context do JWT.
+-- Não confundir com as roles técnicas do PostgreSQL (svc_node_js, svc_php_web etc.).
+CREATE TYPE ecommerce.user_role AS ENUM (
+    'CLIENTE',
+    'ADMIN'
+);
+
 
 -- ============================================================================
 -- BLOCO 3: TABELA DE AUDITORIA IMUTÁVEL (SCHEMA AUDIT)
@@ -113,6 +120,8 @@ CREATE TABLE ecommerce.users (
     email ecommerce.email_address UNIQUE NOT NULL,
     -- Deve armazenar hash Bcrypt ($2b$) ou Argon2id para compatibilidade entre PHP, Node e Java.
     password_hash VARCHAR(255) NOT NULL,
+    -- Cadastro público deve manter CLIENTE; ADMIN é concedido somente por fluxo administrativo autorizado.
+    role ecommerce.user_role NOT NULL DEFAULT 'CLIENTE',
     -- Valida CPF (11 dígitos) ou CNPJ (14 dígitos) contendo exclusivamente números.
     document_number VARCHAR(14) UNIQUE NOT NULL CHECK (document_number ~ '^[0-9]{11}([0-9]{3})?$'),
     -- Valida telefone no padrão internacional E.164 (ex: +5561999999999 ou apenas números).
