@@ -3,3 +3,12 @@
 .env.*
 !.env.example
 
+# Dependências
+node_modules/
+
+# Build
+dist/
+build/
+
+# Cache do Angular
+.angular/
