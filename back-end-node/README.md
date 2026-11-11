@@ -1,35 +1,44 @@
 # Back-end Node.js
 
-Estrutura reservada ao serviço Node.js da loja. Este diretório contém apenas a organização inicial; a aplicação Express, dependências e endpoints ainda não foram implementados.
+API Express em TypeScript para o serviço Node da loja. O cadastro de cliente segue a seção 2.2 do SRS e persiste em `ecommerce.users` do PostgreSQL compartilhado.
 
-## Responsabilidades previstas
+## Cadastro de cliente
 
-- **Autenticação e identidade:** cadastro de clientes, login, recuperação de senha, sessão e emissão de JWT.
-- **Catálogo:** vitrine, busca e detalhes públicos de produtos.
-- **Tempo real:** receber notificações internas de mudança de status e distribuí-las aos clientes autorizados.
+`POST /auth/register` recebe JSON:
 
-O Node será o único emissor dos JWT, conforme o SRS. Claims, assinatura, chaves e contratos HTTP ainda precisam ser alinhados com as equipes Java e PHP antes de implementar os serviços consumidores.
+```json
+{
+  "fullName": "Nome do cliente",
+  "email": "cliente@exemplo.com",
+  "password": "senha-com-pelo-menos-8",
+  "confirmPassword": "senha-com-pelo-menos-8",
+  "documentNumber": "12345678900",
+  "phone": "+5511999999999"
+}
+```
+
+`phone` pode ser omitido. CPF/CNPJ pode ser enviado com pontuação e é persistido somente com dígitos. O serviço valida os campos, calcula o hash BCrypt e insere explicitamente o papel `CLIENTE`; não aceita campos adicionais como `role`. O e-mail e o documento são protegidos também pelas constraints do banco.
+
+Em caso de sucesso, responde `201` com `{ "user": { ... }, "token": "..." }`. O JWT inclui `sub` com o UUID do cliente, `role: "CLIENTE"` e `context: "STORE"`. Dados inválidos retornam `400`, e conflito de e-mail/documento retorna `409`.
+
+## Executar
+
+1. Use Node.js 22 ou superior.
+2. Copie `.env.example` para `.env` e configure a conexão PostgreSQL, uma `JWT_SECRET` aleatória com pelo menos 32 caracteres e as origens Angular em `CORS_ORIGIN` (separadas por vírgula).
+3. Crie o banco aplicando o `schema.db` da raiz. A conta da aplicação deve ter apenas os privilégios necessários para o serviço.
+4. Instale e execute:
+
+```powershell
+npm install
+npm run dev
+```
+
+A API verifica a conexão com PostgreSQL ao iniciar e escuta na porta `PORT` (3000 por padrão). Para compilar e executar em produção, use `npm run build` e `npm start`. `npm test` executa os testes de validação do cadastro.
+
+Se o schema já estiver instalado, aplique `src/database/001-redact-password-hash-from-audit.sql` antes de aceitar cadastros. O trigger registra as alterações dos usuários sem incluir `password_hash` nos novos snapshots; essa alteração não remove hashes que eventualmente já estejam em logs antigos.
 
 ## Limites entre serviços
 
-- O Angular consumirá futuramente as APIs Node para autenticação e catálogo. O carrinho permanece no Angular.
-- Checkout, criação de pedidos e pagamento pertencem ao serviço Java; o Angular enviará os pedidos diretamente a ele.
-- O painel administrativo pertence ao PHP/Laravel. Ao alterar um pedido, o PHP notificará o Node pelo endpoint interno acordado; o Node publicará a atualização em tempo real para a tela de pedidos Angular.
-- `schema.db` é o script PostgreSQL compartilhado entre os serviços. Credenciais, permissões e possíveis mudanças no schema devem ser coordenadas e configuradas fora do código.
-
-## Organização
-
-```text
-src/
-├── app/          # composição futura da aplicação e rotas HTTP
-├── config/       # configuração futura por ambiente
-├── database/     # conexão e acesso futuro ao PostgreSQL
-├── middleware/   # autenticação, validação e erros HTTP
-├── modules/
-│   ├── auth/     # identidade, sessão e JWT
-│   ├── catalog/  # vitrine, busca e detalhes
-│   └── realtime/ # integração interna e WebSocket de status
-└── shared/       # tipos, erros e utilidades realmente comuns
-```
-
-As pastas ainda não implementam lógica. A próxima etapa será definir os contratos de API e autenticação com os serviços Java/PHP e, então, adicionar a base executável do Node.
+- O Node é o emissor de JWT; checkout/pedidos pertencem ao Java e o painel administrativo ao PHP/Laravel.
+- O Angular consome as APIs Node de autenticação e catálogo; o carrinho permanece no Angular.
+- `schema.db` é compartilhado pelos serviços. Mudanças e permissões de banco precisam ser coordenadas entre as equipes.
