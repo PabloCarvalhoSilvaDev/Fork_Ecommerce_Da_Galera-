@@ -1,36 +1,13 @@
 <div class="principal">
   <header class="principal__cabecalho">
-    <button
-      type="button"
-      class="principal__alternar"
-      (click)="alternarMenuLateral()"
-      aria-label="Alternar menu lateral"
-      aria-controls="menu-lateral"
-      [attr.aria-expanded]="menuLateralAberto"
-    >
-      <i class="pi pi-bars"></i>
-    </button>
-
     <a routerLink="/" class="principal__marca">E-commerce da Galera</a>
 
     <span class="principal__usuario">{{ nomeUsuario }}</span>
   </header>
 
-  <div class="principal__corpo">
-    <aside
-      id="menu-lateral"
-      class="principal__menu"
-      [class.is-recolhido]="!menuLateralAberto"
-      [attr.aria-hidden]="!menuLateralAberto"
-      [attr.inert]="!menuLateralAberto ? '' : null"
-    >
-      <app-menu-lateral />
-    </aside>
-
-    <main class="principal__conteudo">
-      <router-outlet />
-    </main>
-  </div>
+  <main class="principal__conteudo">
+    <router-outlet />
+  </main>
 
   <footer class="principal__rodape">@Desenvolvido por estudantes da UNICEPLAC</footer>
 </div>
