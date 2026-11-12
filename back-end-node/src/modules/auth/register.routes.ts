@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import type { QueryResultRow } from 'pg';
 import { env } from '../../config/env.js';
 import { pool } from '../../database/pool.js';
+import { getRegistrationConflict } from './register.conflict.js';
 import { registerCustomerSchema } from './register.schema.js';
 
 interface RegisteredCustomer extends QueryResultRow {
@@ -22,7 +23,15 @@ const registrationLimiter = rateLimit({
   limit: 10,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
-  message: { error: 'Muitas tentativas de cadastro. Tente novamente mais tarde.' },
+  message: {
+    error: 'Muitas tentativas de cadastro. Tente novamente mais tarde.',
+  },
+  handler: (_request, response) => {
+    console.log('[Cadastro] Cadastro recusado: limite de tentativas excedido.');
+    response.status(429).json({
+      error: 'Muitas tentativas de cadastro. Tente novamente mais tarde.',
+    });
+  },
 });
 
 export const registerRoutes = Router();
@@ -31,6 +40,7 @@ registerRoutes.post('/register', registrationLimiter, async (request, response, 
   const parsed = registerCustomerSchema.safeParse(request.body);
 
   if (!parsed.success) {
+    console.log('[Cadastro] Cadastro recusado: dados de cadastro inválidos.');
     response.status(400).json({
       error: 'Dados de cadastro inválidos',
       details: parsed.error.flatten().fieldErrors,
@@ -57,6 +67,7 @@ registerRoutes.post('/register', registrationLimiter, async (request, response, 
     );
 
     const customer = result.rows[0];
+    console.log('[Cadastro] Registro persistido no banco de dados.');
     const token = jwt.sign(
       { role: customer.role, context: 'STORE' },
       env.JWT_SECRET,
@@ -65,15 +76,19 @@ registerRoutes.post('/register', registrationLimiter, async (request, response, 
 
     response.status(201).json({ user: customer, token });
   } catch (error) {
-    if (isUniqueViolation(error)) {
-      response.status(409).json({ error: 'E-mail ou documento já cadastrado' });
+    const conflict = getRegistrationConflict(error);
+    if (conflict) {
+      console.log(
+        conflict.field === 'email'
+          ? '[Cadastro] Cadastro recusado: e-mail já cadastrado.'
+          : conflict.field === 'documentNumber'
+            ? '[Cadastro] Cadastro recusado: documento já cadastrado.'
+            : '[Cadastro] Cadastro recusado por conflito de unicidade.',
+      );
+      response.status(409).json(conflict);
       return;
     }
 
     next(error);
   }
 });
-
-function isUniqueViolation(error: unknown): boolean {
-  return typeof error === 'object' && error !== null && 'code' in error && error.code === '23505';
-}
