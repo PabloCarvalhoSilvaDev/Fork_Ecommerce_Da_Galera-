@@ -2,7 +2,9 @@ import cors from "cors";
 import express, { type ErrorRequestHandler } from "express";
 import helmet from "helmet";
 import { corsOrigins } from "../config/env.js";
+import { contextRoutes } from "../modules/auth/context/context.routes.js";
 import { loginRoutes } from "../modules/auth/login/login.routes.js";
+import { logoutRoutes } from "../modules/auth/logout/logout.routes.js";
 import { passwordResetRoutes } from "../modules/auth/password/password-reset.routes.js";
 import { registerRoutes } from "../modules/auth/register/register.routes.js";
 
@@ -30,6 +32,8 @@ app.get("/health", (_request, response) => {
 
 app.use("/auth", registerRoutes);
 app.use("/auth", loginRoutes);
+app.use("/auth", contextRoutes);
+app.use("/auth", logoutRoutes);
 app.use("/auth", passwordResetRoutes);
 
 app.use((_request, response) => {
