@@ -3,6 +3,7 @@ import express, { type ErrorRequestHandler } from 'express';
 import helmet from 'helmet';
 import { corsOrigins } from '../config/env.js';
 import { loginRoutes } from '../modules/auth/login.routes.js';
+import { passwordResetRoutes } from '../modules/auth/password-reset.routes.js';
 import { registerRoutes } from '../modules/auth/register.routes.js';
 
 const app = express();
@@ -29,6 +30,7 @@ app.get('/health', (_request, response) => {
 
 app.use('/auth', registerRoutes);
 app.use('/auth', loginRoutes);
+app.use('/auth', passwordResetRoutes);
 
 app.use((_request, response) => {
   response.status(404).json({ error: 'Rota não encontrada' });
