@@ -1,45 +1,45 @@
-import { Router } from 'express';
-import rateLimit from 'express-rate-limit';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import type { QueryResultRow } from 'pg';
-import { env } from '../../config/env.js';
-import { pool } from '../../database/pool.js';
-import { loginSchema } from './login.schema.js';
+import { Router } from "express";
+import rateLimit from "express-rate-limit";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import type { QueryResultRow } from "pg";
+import { env } from "../../../config/env.js";
+import { pool } from "../../../database/pool.js";
+import { loginSchema } from "./login.schema.js";
 
 interface LoginUser extends QueryResultRow {
   id: string;
   fullName: string;
   email: string;
-  role: 'CLIENTE' | 'ADMIN';
+  role: "CLIENTE" | "ADMIN";
   passwordHash: string;
 }
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 10,
-  standardHeaders: 'draft-8',
+  standardHeaders: "draft-8",
   legacyHeaders: false,
   message: {
-    error: 'Muitas tentativas de login. Tente novamente mais tarde.',
+    error: "Muitas tentativas de login. Tente novamente mais tarde.",
   },
   handler: (_request, response) => {
-    console.log('[Login] Acesso recusado: limite de tentativas excedido.');
+    console.log("[Login] Acesso recusado: limite de tentativas excedido.");
     response.status(429).json({
-      error: 'Muitas tentativas de login. Tente novamente mais tarde.',
+      error: "Muitas tentativas de login. Tente novamente mais tarde.",
     });
   },
 });
 
 export const loginRoutes = Router();
 
-loginRoutes.post('/login', loginLimiter, async (request, response, next) => {
+loginRoutes.post("/login", loginLimiter, async (request, response, next) => {
   const parsed = loginSchema.safeParse(request.body);
 
   if (!parsed.success) {
-    console.log('[Login] Acesso recusado: dados de login inválidos.');
+    console.log("[Login] Acesso recusado: dados de login inválidos.");
     response.status(400).json({
-      error: 'Dados de login inválidos',
+      error: "Dados de login inválidos",
       details: parsed.error.flatten().fieldErrors,
     });
     return;
@@ -65,17 +65,21 @@ loginRoutes.post('/login', loginLimiter, async (request, response, next) => {
 
     const user = result.rows[0];
     if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-      console.log('[Login] Acesso recusado: credenciais inválidas.');
-      response.status(401).json({ error: 'E-mail ou senha inválidos' });
+      console.log("[Login] Acesso recusado: credenciais inválidas.");
+      response.status(401).json({ error: "E-mail ou senha inválidos" });
       return;
     }
 
-    const token = jwt.sign({ role: user.role, context: 'STORE' }, env.JWT_SECRET, {
-      subject: user.id,
-      expiresIn: env.JWT_EXPIRES_IN_SECONDS,
-    });
+    const token = jwt.sign(
+      { role: user.role, context: "STORE" },
+      env.JWT_SECRET,
+      {
+        subject: user.id,
+        expiresIn: env.JWT_EXPIRES_IN_SECONDS,
+      },
+    );
 
-    console.log('[Login] Autenticação concluída.');
+    console.log("[Login] Autenticação concluída.");
     response.status(200).json({
       user: {
         id: user.id,
@@ -86,7 +90,7 @@ loginRoutes.post('/login', loginLimiter, async (request, response, next) => {
       token,
     });
   } catch (error) {
-    console.log('[Login] Erro ao processar autenticação.');
+    console.log("[Login] Erro ao processar autenticação.");
     next(error);
   }
 });
