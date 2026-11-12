@@ -135,8 +135,7 @@ export class Pagamento {
       .subscribe({
         next: (pedido) => {
           this.enviando.set(false);
-          // A tela de confirmação é de outra pessoa; ela lê o pedido pela query string.
-          this.router.navigate(['/confirmacao'], { queryParams: { pedido: pedido.id } });
+          this.router.navigate(['/checkout/success', pedido.id]);
         },
         error: () => {
           this.enviando.set(false);

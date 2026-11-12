@@ -199,7 +199,7 @@
                 — {{ resumo.endereco.complemento }}
               }
               · CEP {{ cepFormatado() }} ·
-              <a routerLink="/endereco">alterar</a>
+              <a routerLink="/checkout/address">alterar</a>
             </p>
           </div>
         </div>
@@ -211,7 +211,10 @@
       @if (resumo(); as resumo) {
         <dl class="resumo__linhas">
           <div class="resumo__linha">
-            <dt>Subtotal ({{ resumo.quantidadeItens }} itens)</dt>
+            <dt>
+              Subtotal ({{ resumo.quantidadeItens }}
+              {{ resumo.quantidadeItens === 1 ? 'item' : 'itens' }})
+            </dt>
             <dd>{{ resumo.subtotal | moeda }}</dd>
           </div>
           <div class="resumo__linha">

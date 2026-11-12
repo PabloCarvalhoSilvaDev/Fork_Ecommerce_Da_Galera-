@@ -1,8 +1,13 @@
 <div class="principal">
   <header class="principal__cabecalho">
-    <a routerLink="/" class="principal__marca">E-commerce da Galera</a>
+    <!-- TODO: definir o destino do clique na marca; por ora não é link. -->
+    <span class="principal__marca">E-commerce da Galera</span>
 
-    <span class="principal__usuario">{{ nomeUsuario }}</span>
+    @if (nomeUsuario(); as nome) {
+      <span class="principal__usuario">{{ nome }}</span>
+    } @else {
+      <a routerLink="/auth/login" class="principal__usuario principal__entrar">Entrar</a>
+    }
   </header>
 
   <main class="principal__conteudo">

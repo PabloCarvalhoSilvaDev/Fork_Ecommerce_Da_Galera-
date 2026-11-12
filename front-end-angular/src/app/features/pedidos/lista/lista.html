@@ -10,7 +10,7 @@
   } @else if (pedidos().length === 0) {
     <div class="pedidos__vazio">
       <p>Você ainda não fez nenhum pedido.</p>
-      <a routerLink="/vitrine" class="botao botao--primario">Ver produtos</a>
+      <a routerLink="/catalog/home" class="botao botao--primario">Ver produtos</a>
     </div>
   } @else {
     <div class="pedidos__tabela">
@@ -32,7 +32,7 @@
           @for (pedido of pedidos(); track pedido.id) {
             <tr>
               <td class="pedidos__codigo">
-                <a [routerLink]="['/detalhes-pedido', pedido.id]">{{ codigo(pedido.id) }}</a>
+                <a [routerLink]="['/account/orders', pedido.id]">{{ codigo(pedido.id) }}</a>
               </td>
               <td>{{ pedido.criadoEm | data }}</td>
               <td>{{ pedido.quantidadeItens }}</td>
@@ -40,7 +40,7 @@
               <td><app-status-pedido [status]="pedido.status" /></td>
               <td class="pedidos__acoes">
                 <a
-                  [routerLink]="['/detalhes-pedido', pedido.id]"
+                  [routerLink]="['/account/orders', pedido.id]"
                   class="botao botao--secundario"
                   [attr.aria-label]="'Detalhes do pedido ' + codigo(pedido.id)"
                   >Detalhes</a

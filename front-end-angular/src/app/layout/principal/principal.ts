@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
-import { ChangeDetectionStrategy } from '@angular/core';
+import { Sessao } from '../../core/sessao/sessao';
 
 @Component({
   selector: 'app-principal',
@@ -10,5 +10,7 @@ import { ChangeDetectionStrategy } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Principal {
-  protected readonly nomeUsuario = 'Pablo Carvalho Silva';
+  private readonly sessao = inject(Sessao);
+
+  protected readonly nomeUsuario = computed(() => this.sessao.usuario()?.fullName ?? null);
 }

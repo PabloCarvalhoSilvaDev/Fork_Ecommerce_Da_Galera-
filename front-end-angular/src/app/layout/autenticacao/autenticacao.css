@@ -39,6 +39,14 @@
   box-shadow: 0 2px 8px rgb(75 44 29 / 4%);
 }
 
+/* Telas maiores: cartão um pouco mais largo para o formulário respirar. */
+@media (min-width: 768px) {
+  .autenticacao__cartao {
+    width: min(100%, 440px);
+    padding: 28px 32px;
+  }
+}
+
 @media (max-width: 420px) {
   .autenticacao__cartao {
     padding: 22px 18px;

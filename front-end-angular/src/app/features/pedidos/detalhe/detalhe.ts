@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { map, switchMap, tap } from 'rxjs';
+import { catchError, map, of, switchMap, tap } from 'rxjs';
 import { DataPipe, MoedaPipe } from '../../../shared/formatacao/formatacao';
 import {
   codigoPedido,
@@ -35,7 +35,7 @@ export class Detalhe {
 
   private readonly rota = inject(ActivatedRoute);
 
-  /** Parâmetro de rota `:id` (UUID do pedido). */
+  /** Parâmetro de rota `:orderId` (UUID do pedido). */
   private readonly id = signal('');
 
   protected readonly pedido = signal<Pedido | null>(null);
@@ -65,12 +65,15 @@ export class Detalhe {
     }));
   });
 
-  protected readonly eventoEncerramento = computed(() => {
+  protected readonly mensagemEncerramento = computed(() => {
     const pedido = this.pedido();
     if (!pedido || !this.encerradoSemEntrega()) {
-      return null;
+      return '';
     }
-    return pedido.historico.find((evento) => evento.status === pedido.status) ?? null;
+    const acao = pedido.status === 'CANCELED' ? 'cancelado' : 'estornado';
+    const evento = pedido.historico.find((e) => e.status === pedido.status);
+    const quando = evento ? ` em ${new DataPipe().transform(evento.em)}` : '';
+    return `Este pedido foi ${acao}${quando}.`;
   });
 
   protected readonly pagamentoDescricao = computed(() => {
@@ -88,24 +91,21 @@ export class Detalhe {
   constructor() {
     this.rota.paramMap
       .pipe(
-        map((parametros) => parametros.get('id') ?? ''),
+        map((parametros) => parametros.get('orderId') ?? ''),
         tap((id) => {
           this.id.set(id);
           this.carregando.set(true);
           this.erro.set(false);
         }),
-        switchMap((id) => this.pedidosService.buscar(id)),
+        // catchError por dentro: um pedido não encontrado não pode matar o
+        // paramMap, senão trocar de id na mesma tela para de carregar.
+        switchMap((id) => this.pedidosService.buscar(id).pipe(catchError(() => of(null)))),
         takeUntilDestroyed(),
       )
-      .subscribe({
-        next: (pedido) => {
-          this.pedido.set(pedido);
-          this.carregando.set(false);
-        },
-        error: () => {
-          this.erro.set(true);
-          this.carregando.set(false);
-        },
+      .subscribe((pedido) => {
+        this.pedido.set(pedido);
+        this.erro.set(pedido === null);
+        this.carregando.set(false);
       });
   }
 }

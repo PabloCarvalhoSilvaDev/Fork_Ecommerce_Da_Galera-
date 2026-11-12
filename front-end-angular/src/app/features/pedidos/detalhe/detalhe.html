@@ -1,12 +1,12 @@
 <section class="detalhe">
-  <a routerLink="/lista-pedidos" class="detalhe__voltar">← Meus pedidos</a>
+  <a routerLink="/account/orders" class="detalhe__voltar">← Meus pedidos</a>
 
   @if (carregando()) {
     <p class="detalhe__aviso" role="status">Carregando pedido…</p>
   } @else if (erro()) {
     <p class="detalhe__aviso detalhe__aviso--erro" role="alert">
       Não encontramos esse pedido. Confira em
-      <a routerLink="/lista-pedidos">Meus pedidos</a>.
+      <a routerLink="/account/orders">Meus pedidos</a>.
     </p>
   } @else {
     @if (pedido(); as pedido) {
@@ -21,11 +21,7 @@
       <section class="cartao detalhe__linha" aria-label="Andamento do pedido">
         @if (encerradoSemEntrega()) {
           <p class="detalhe__encerrado" role="status">
-            Este pedido foi {{ pedido.status === 'CANCELED' ? 'cancelado' : 'estornado' }}
-            @if (eventoEncerramento(); as evento) {
-              em {{ evento.em | data }}
-            }
-            .
+            {{ mensagemEncerramento() }}
           </p>
         } @else {
           <ol class="linha-tempo">

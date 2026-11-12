@@ -10,6 +10,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { Sessao, UsuarioSessao } from '../../../core/sessao/sessao';
 
 type DocumentType = 'cpf' | 'cnpj';
 type RegistrationField =
@@ -30,11 +31,35 @@ interface ApiErrorResponse {
 
 interface RegistrationResponse {
   token: string;
-  user: {
-    id: string;
-    email: string;
-  };
+  user: UsuarioSessao;
 }
+
+/** Brasil: DDD (2 dígitos) + número de 8 ou 9 dígitos. */
+const CODIGO_PAIS_BRASIL = '55';
+
+/** "61988887777" → "(61) 98888-7777"; formata aos poucos enquanto digita. */
+function formatPhone(digits: string): string {
+  const d = digits.slice(0, 11);
+  if (d.length <= 2) {
+    return d.length ? `(${d}` : '';
+  }
+  const ddd = d.slice(0, 2);
+  const numero = d.slice(2);
+  const corte = d.length === 11 ? 5 : 4;
+  if (numero.length <= corte) {
+    return `(${ddd}) ${numero}`;
+  }
+  return `(${ddd}) ${numero.slice(0, corte)}-${numero.slice(corte)}`;
+}
+
+/** Opcional; se preenchido, exige DDD válido + 8 ou 9 dígitos. */
+const phoneValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  const digits = String(control.value ?? '').replace(/\D/g, '');
+  if (!digits) {
+    return null;
+  }
+  return /^[1-9]\d{9,10}$/.test(digits) ? null : { phone: true };
+};
 
 const passwordMatchValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
   const password = control.get('password')?.value;
@@ -95,6 +120,7 @@ export class CadastroCliente {
   private readonly http = inject(HttpClient);
   // OnPush: a resposta do HTTP não marca a tela para atualizar sozinha.
   private readonly changeDetector = inject(ChangeDetectorRef);
+  private readonly sessao = inject(Sessao);
 
   documentType: DocumentType = 'cpf';
   passwordVisible = false;
@@ -146,7 +172,7 @@ export class CadastroCliente {
         '',
         [Validators.required, Validators.pattern(/^\d+$/), this.documentNumberValidator],
       ],
-      phone: ['', [Validators.required, Validators.pattern(/^\+?[1-9]\d{9,14}$/)]],
+      phone: ['', phoneValidator],
     },
     { validators: passwordMatchValidator },
   );
@@ -192,8 +218,33 @@ export class CadastroCliente {
     );
   }
 
-  sanitizeDigits(event: Event, field: 'documentNumber' | 'phone'): void {
+  sanitizeDigits(event: Event, field: 'documentNumber'): void {
     this.sanitizeInput(event, (value) => value.replace(/\D/g, ''), this.form.controls[field]);
+  }
+
+  formatPhoneInput(event: Event): void {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement)) {
+      return;
+    }
+
+    // Mantém o cursor depois do mesmo dígito, mesmo com "(", ")", " " e "-" entrando.
+    const cursor = input.selectionStart ?? input.value.length;
+    const digitsBeforeCursor = input.value.slice(0, cursor).replace(/\D/g, '').length;
+    const formatted = formatPhone(input.value.replace(/\D/g, ''));
+
+    let position = 0;
+    let seen = 0;
+    while (position < formatted.length && seen < digitsBeforeCursor) {
+      if (/\d/.test(formatted[position])) {
+        seen++;
+      }
+      position++;
+    }
+
+    input.value = formatted;
+    input.setSelectionRange(position, position);
+    this.form.controls.phone.setValue(formatted);
   }
 
   setDocumentType(type: DocumentType): void {
@@ -219,6 +270,7 @@ export class CadastroCliente {
     }
 
     const value = this.form.getRawValue();
+    const phoneDigits = value.phone.replace(/\D/g, '');
     this.submitting = true;
     this.http
       .post<RegistrationResponse>('/auth/register', {
@@ -226,10 +278,12 @@ export class CadastroCliente {
         fullName: value.fullName.trim(),
         email: value.email.trim(),
         documentNumber: value.documentNumber.replace(/\D/g, ''),
-        phone: value.phone.trim(),
+        // O back espera E.164 só com números; sem telefone, o campo vai omitido.
+        phone: phoneDigits ? CODIGO_PAIS_BRASIL + phoneDigits : undefined,
       })
       .subscribe({
-        next: () => {
+        next: (response) => {
+          this.sessao.iniciar(response.token, response.user);
           this.submitting = false;
           this.registrationComplete = true;
           this.changeDetector.markForCheck();

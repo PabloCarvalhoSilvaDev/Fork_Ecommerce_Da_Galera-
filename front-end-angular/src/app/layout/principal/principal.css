@@ -21,26 +21,62 @@
 .principal__marca {
   grid-column: 2;
   font-weight: 700;
-  text-decoration: none;
   color: var(--cor-texto-invertido);
-}
-
-.principal__marca:hover {
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
+  white-space: nowrap;
 }
 
 .principal__usuario {
   justify-self: end;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   font-weight: 600;
   color: var(--cor-texto-invertido);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+.principal__entrar {
+  color: var(--achei-urucum);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* Largura do conteúdo acompanha a tela até 1200px (protótipo Achei). */
 .principal__conteudo {
-  width: min(720px, 100%);
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 1.25rem 1rem 2rem;
   flex: 1;
+}
+
+@media (min-width: 600px) {
+  .principal__conteudo {
+    padding: 1.75rem 1.5rem 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .principal__cabecalho {
+    padding: 1rem 2rem;
+  }
+
+  .principal__conteudo {
+    padding: 2rem 2rem 3rem;
+  }
+}
+
+/* Celular: marca à esquerda e usuário à direita, sem centralizar. */
+@media (max-width: 599px) {
+  .principal__cabecalho {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 0.75rem 1rem;
+  }
+
+  .principal__marca {
+    grid-column: 1;
+  }
 }
 
 .principal__rodape {

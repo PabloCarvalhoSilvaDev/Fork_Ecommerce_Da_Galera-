@@ -5,7 +5,10 @@
   </header>
 
   @if (registrationComplete) {
-    <p class="cadastro__sucesso" role="status">Conta criada com sucesso. Você já pode entrar.</p>
+    <p class="cadastro__sucesso" role="status">
+      Conta criada com sucesso.
+      <a class="link-destaque" routerLink="/catalog/home">Ir para a loja</a>
+    </p>
   } @else {
     <form class="cadastro__formulario" [formGroup]="form" (ngSubmit)="submit()" novalidate>
       <div class="cadastro__campo" [class.cadastro__campo--invalido]="fieldInvalid('fullName')">
@@ -262,29 +265,22 @@
       </div>
 
       <div class="cadastro__campo" [class.cadastro__campo--invalido]="fieldInvalid('phone')">
-        <label for="telefone">
-          Telefone <span class="cadastro__obrigatorio" aria-hidden="true">*</span>
-        </label>
+        <label for="telefone">Telefone <span class="cadastro__opcional">(opcional)</span></label>
         <input
           id="telefone"
           type="tel"
           formControlName="phone"
-          autocomplete="tel"
+          autocomplete="tel-national"
           inputmode="numeric"
-          placeholder="5561988887777"
-          maxlength="20"
-          (input)="sanitizeDigits($event, 'phone')"
+          placeholder="(61) 98888-7777"
+          maxlength="15"
+          (input)="formatPhoneInput($event)"
           aria-describedby="telefone-ajuda telefone-erro"
-          required
         />
-        <small id="telefone-ajuda">Formato internacional (E.164)</small>
+        <small id="telefone-ajuda">DDD + número</small>
         @if (fieldInvalid('phone')) {
           <small id="telefone-erro" class="cadastro__erro" role="alert">
-            @if (form.controls.phone.hasError('required')) {
-              Informe seu telefone.
-            } @else {
-              Informe um telefone válido no padrão E.164.
-            }
+            Informe DDD + número, por exemplo (61) 98888-7777.
           </small>
         }
       </div>
@@ -293,13 +289,13 @@
         <p class="cadastro__erro-geral" role="alert">{{ errorMessage }}</p>
       }
 
-      <button class="cadastro__botao" type="submit" [disabled]="form.invalid || submitting">
+      <button class="cadastro__botao" type="submit" [disabled]="submitting">
         {{ submitting ? 'Criando conta…' : 'Criar conta' }}
       </button>
     </form>
 
     <p class="cadastro__login">
-      Já tem conta? <a class="link-destaque" routerLink="/Login">Entrar</a>
+      Já tem conta? <a class="link-destaque" routerLink="/auth/login">Entrar</a>
     </p>
   }
 </section>

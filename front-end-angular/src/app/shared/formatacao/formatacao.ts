@@ -20,8 +20,12 @@ export class MoedaPipe implements PipeTransform {
 /** `iso | data` → "09/11/2026"; `iso | data: 'curta'` → "09/11, 14:02". */
 @Pipe({ name: 'data' })
 export class DataPipe implements PipeTransform {
-  transform(iso: string, formato: 'completa' | 'curta' = 'completa'): string {
-    const data = new Date(iso);
+  transform(iso: string | null | undefined, formato: 'completa' | 'curta' = 'completa'): string {
+    const data = iso ? new Date(iso) : null;
+    // Intl lança RangeError com data inválida e derrubaria a tela inteira.
+    if (!data || Number.isNaN(data.getTime())) {
+      return '—';
+    }
     return formato === 'curta' ? FORMATO_DATA_HORA.format(data) : FORMATO_DATA.format(data);
   }
 }
