@@ -2,6 +2,7 @@ import cors from 'cors';
 import express, { type ErrorRequestHandler } from 'express';
 import helmet from 'helmet';
 import { corsOrigins } from '../config/env.js';
+import { loginRoutes } from '../modules/auth/login.routes.js';
 import { registerRoutes } from '../modules/auth/register.routes.js';
 
 const app = express();
@@ -27,6 +28,7 @@ app.get('/health', (_request, response) => {
 });
 
 app.use('/auth', registerRoutes);
+app.use('/auth', loginRoutes);
 
 app.use((_request, response) => {
   response.status(404).json({ error: 'Rota não encontrada' });
