@@ -23,6 +23,8 @@ const genericForgotMessage =
   "Se o e-mail estiver cadastrado, enviaremos instruções para redefinir a senha.";
 const invalidResetMessage =
   "Token inválido ou expirado. Solicite uma nova redefinição.";
+const forgotPasswordRedirect = "/auth/forgot";
+const loginRedirect = "/auth/login";
 
 const forgotPasswordLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -153,7 +155,10 @@ passwordResetRoutes.post(
       console.log(
         "[Redefinição de senha] Solicitação recusada: token inválido ou expirado.",
       );
-      response.status(400).json({ error: invalidResetMessage });
+      response.status(400).json({
+        error: invalidResetMessage,
+        redirectTo: forgotPasswordRedirect,
+      });
       return;
     }
 
@@ -182,7 +187,10 @@ passwordResetRoutes.post(
         console.log(
           "[Redefinição de senha] Solicitação recusada: token inválido ou expirado.",
         );
-        response.status(400).json({ error: invalidResetMessage });
+        response.status(400).json({
+          error: invalidResetMessage,
+          redirectTo: forgotPasswordRedirect,
+        });
         return;
       }
 
@@ -203,7 +211,10 @@ passwordResetRoutes.post(
         console.log(
           "[Redefinição de senha] Solicitação recusada: token inválido ou expirado.",
         );
-        response.status(400).json({ error: invalidResetMessage });
+        response.status(400).json({
+          error: invalidResetMessage,
+          redirectTo: forgotPasswordRedirect,
+        });
         return;
       }
 
@@ -219,9 +230,10 @@ passwordResetRoutes.post(
       console.log(
         "[Redefinição de senha] Senha atualizada e token invalidado.",
       );
-      response
-        .status(200)
-        .json({ message: "Senha redefinida com sucesso. Faça login." });
+      response.status(200).json({
+        message: "Senha redefinida com sucesso. Faça login.",
+        redirectTo: loginRedirect,
+      });
     } catch (error) {
       if (transactionOpen) {
         try {
