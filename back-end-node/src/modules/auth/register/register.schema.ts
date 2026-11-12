@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { customerPasswordSchema } from "./password.schema.js";
+import { customerPasswordSchema } from "../password/password.schema.js";
 
 const documentNumberSchema = z
   .string()
