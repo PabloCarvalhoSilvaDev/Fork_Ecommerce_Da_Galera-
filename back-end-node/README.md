@@ -33,7 +33,7 @@ Todos os JWTs de sessão incluem `jti`. `POST /auth/logout` recebe o token em `A
 
 Em desenvolvimento/teste, `POST /auth/forgot` recebe `{ "email": "cliente@exemplo.com" }` e responde `200` com uma mensagem genérica, sem revelar se a conta existe. O link é enviado ao console; o token aleatório não é um JWT, somente seu hash SHA-256 é armazenado e expira em 15 minutos. Em produção, a rota responde `503` até haver um serviço de entrega de e-mail configurado.
 
-`POST /auth/reset/:token` recebe `{ "password": "...", "confirmPassword": "..." }`, valida as mesmas regras de senha do cadastro, atualiza o hash BCrypt e invalida o token na mesma transação. Token inválido, expirado ou já usado retorna `400`; sucesso retorna `200` e orienta o usuário a entrar novamente.
+`POST /auth/reset/:token` recebe `{ "password": "...", "confirmPassword": "..." }`, valida as mesmas regras de senha do cadastro, atualiza o hash BCrypt e invalida o token na mesma transação. Token inválido, expirado ou já usado retorna `400` com `redirectTo: "/auth/forgot"`; sucesso retorna `200` com `redirectTo: "/auth/login"`.
 
 ## Executar
 
