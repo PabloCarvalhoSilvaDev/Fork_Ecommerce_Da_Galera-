@@ -1,5 +1,5 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
@@ -93,6 +93,8 @@ function isApiErrorResponse(value: unknown): value is ApiErrorResponse {
 export class CadastroCliente {
   private readonly formBuilder = inject(FormBuilder);
   private readonly http = inject(HttpClient);
+  // OnPush: a resposta do HTTP não marca a tela para atualizar sozinha.
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
   documentType: DocumentType = 'cpf';
   passwordVisible = false;
@@ -230,9 +232,13 @@ export class CadastroCliente {
         next: () => {
           this.submitting = false;
           this.registrationComplete = true;
+          this.changeDetector.markForCheck();
           console.log('[Cadastro] Cadastro concluído pelo servidor.');
         },
-        error: (error: unknown) => this.handleRegistrationError(error),
+        error: (error: unknown) => {
+          this.handleRegistrationError(error);
+          this.changeDetector.markForCheck();
+        },
       });
   }
 
