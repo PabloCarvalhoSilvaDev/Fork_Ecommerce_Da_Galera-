@@ -1,0 +1,46 @@
+.autenticacao {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 28px 16px;
+  background: #faf3e9;
+  color: #38251f;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.autenticacao__marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #38251f;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.autenticacao__icone {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+
+.autenticacao__cartao {
+  width: min(100%, 380px);
+  padding: 24px 26px;
+  border: 1px solid #eee3d7;
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgb(75 44 29 / 4%);
+}
+
+@media (max-width: 420px) {
+  .autenticacao__cartao {
+    padding: 22px 18px;
+  }
+}

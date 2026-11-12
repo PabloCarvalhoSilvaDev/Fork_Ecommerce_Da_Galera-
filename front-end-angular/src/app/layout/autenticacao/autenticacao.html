@@ -1,0 +1,30 @@
+<div class="autenticacao">
+  <a
+    class="autenticacao__marca"
+    routerLink="/cadastro-cliente"
+    aria-label="Achei - cadastro de cliente"
+  >
+    <svg
+      class="autenticacao__icone"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <rect x="1" y="1" width="22" height="22" rx="5" fill="#c7441d" />
+      <path
+        d="m14.5 14.5 4 4"
+        fill="none"
+        stroke="#fff3e6"
+        stroke-linecap="round"
+        stroke-width="2.7"
+      />
+      <circle cx="10.5" cy="10.5" r="5.1" fill="none" stroke="#fff3e6" stroke-width="2.4" />
+      <circle cx="10.5" cy="10.5" r="2.1" fill="#ffd04a" />
+    </svg>
+    <span>achei</span>
+  </a>
+
+  <main class="autenticacao__cartao">
+    <router-outlet />
+  </main>
+</div>
