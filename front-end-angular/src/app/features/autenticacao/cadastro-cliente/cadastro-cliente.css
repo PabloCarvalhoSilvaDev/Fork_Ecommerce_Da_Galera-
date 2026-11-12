@@ -1,0 +1,244 @@
+.cadastro__cabecalho {
+  margin-bottom: 14px;
+}
+
+.cadastro__cabecalho h1 {
+  margin: 0 0 4px;
+  font-size: 19px;
+  line-height: 1.25;
+}
+
+.cadastro__cabecalho p {
+  margin: 0;
+  color: #796b60;
+  font-size: 11px;
+}
+
+.cadastro__formulario {
+  display: grid;
+  gap: 11px;
+}
+
+.cadastro__campo {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.cadastro__campo label {
+  color: #38251f;
+}
+
+.cadastro__obrigatorio {
+  color: #c62828;
+}
+
+.cadastro__campo input {
+  width: 100%;
+  min-height: 36px;
+  padding: 8px 10px;
+  border: 1px solid #cdbeb1;
+  border-radius: 9px;
+  background: #fff;
+  color: #38251f;
+  font: inherit;
+  font-weight: 400;
+}
+
+.cadastro__campo input::placeholder {
+  color: #8d837a;
+  opacity: 1;
+}
+
+.cadastro__campo input:focus-visible {
+  border-color: #c7441d;
+  outline: 2px solid rgb(199 68 29 / 18%);
+  outline-offset: 1px;
+}
+
+.cadastro__campo small {
+  color: #796b60;
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.cadastro__campo .cadastro__erro,
+.cadastro__erro-geral {
+  color: #b42318;
+}
+
+.cadastro__regras-senha {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 3px;
+  margin: 2px 0 0;
+  padding: 0;
+  color: #796b60;
+  font-size: 10px;
+  font-weight: 400;
+  list-style: none;
+  width: 100%;
+}
+
+.cadastro__regras-senha li {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.cadastro__regras-senha li span {
+  width: 12px;
+  color: #8d837a;
+  font-weight: 700;
+}
+
+.cadastro__regras-senha li.cadastro__regra-senha--validada,
+.cadastro__regras-senha li.cadastro__regra-senha--validada span {
+  color: #217a3c;
+}
+
+.cadastro__campo--invalido input {
+  border-color: #c62828;
+  background: #fff8f7;
+}
+
+.cadastro__linha {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 8px;
+}
+
+.cadastro__senha {
+  position: relative;
+}
+
+.cadastro__senha input {
+  padding-right: 38px;
+}
+
+.cadastro__mostrar-senha {
+  position: absolute;
+  top: 50%;
+  right: 9px;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: #796b60;
+  cursor: pointer;
+}
+
+.cadastro__mostrar-senha:hover {
+  color: #c7441d;
+}
+
+.cadastro__mostrar-senha svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.cadastro__documento-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cadastro__documento-tipo {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid #e6d9cd;
+  border-radius: 7px;
+  background: #faf3e9;
+}
+
+.cadastro__documento-tipo button {
+  padding: 3px 7px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #796b60;
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.cadastro__documento-tipo button.is-selecionado {
+  background: #fff;
+  color: #a8391b;
+  box-shadow: 0 1px 3px rgb(75 44 29 / 12%);
+}
+
+.cadastro__documento-tipo button:focus-visible,
+.cadastro__mostrar-senha:focus-visible {
+  outline: 2px solid #c7441d;
+  outline-offset: 2px;
+}
+
+.cadastro__aviso-senha--erro {
+  color: #b42318 !important;
+}
+
+.cadastro__aviso-senha--sucesso {
+  color: #217a3c !important;
+}
+
+.cadastro__botao {
+  min-height: 39px;
+  margin-top: 1px;
+  border: 0;
+  border-radius: 9px;
+  background: #c7441d;
+  color: #fff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cadastro__botao:hover:not(:disabled) {
+  background: #ad3918;
+}
+
+.cadastro__botao:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.cadastro__botao:focus-visible {
+  outline: 2px solid #c7441d;
+  outline-offset: 2px;
+}
+
+.cadastro__erro-geral {
+  margin: 0;
+  font-size: 11px;
+}
+
+.cadastro__sucesso {
+  margin: 0;
+  color: #217a3c;
+  font-size: 13px;
+}
+
+.cadastro__login {
+  margin: 12px 0 0;
+  color: #796b60;
+  font-size: 10px;
+  text-align: center;
+}
+
+@media (max-width: 360px) {
+  .cadastro__linha {
+    grid-template-columns: 1fr;
+  }
+}
