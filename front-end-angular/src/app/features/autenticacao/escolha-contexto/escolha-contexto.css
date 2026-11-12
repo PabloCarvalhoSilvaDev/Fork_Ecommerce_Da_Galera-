@@ -1,0 +1,76 @@
+.opcoes {
+  display: grid;
+  gap: 10px;
+}
+
+.opcao {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 4px 12px;
+  padding: 14px;
+  border: 1.5px solid #e8dccb;
+  border-radius: 11px;
+  background: #fff;
+  color: #38251f;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.opcao:hover:not(:disabled) {
+  border-color: #c7441d;
+}
+
+.opcao:focus-visible {
+  outline: 2px solid #c7441d;
+  outline-offset: 2px;
+}
+
+.opcao:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.opcao__icone {
+  display: flex;
+  grid-row: span 2;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #f7dccb;
+  color: #c7441d;
+}
+
+.opcao__texto {
+  display: grid;
+  gap: 2px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.opcao__texto strong {
+  font-size: 14px;
+}
+
+.opcao__texto span {
+  color: #796b60;
+}
+
+.opcao__acao {
+  color: #c7441d;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sair {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #796b60;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}

@@ -8,9 +8,10 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { EtapasCheckout } from '../../../shared/etapas-checkout/etapas-checkout';
 import { MoedaPipe } from '../../../shared/formatacao/formatacao';
 import { MetodoPagamento } from '../../pedidos/pedido.model';
-import { PagamentoService, ResumoCheckout } from './pagamento.service';
+import { CheckoutIncompletoError, PagamentoService, ResumoCheckout } from './pagamento.service';
 
 interface OpcaoPagamento {
   metodo: MetodoPagamento;
@@ -41,7 +42,7 @@ function validadeCartao(control: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-pagamento',
-  imports: [ReactiveFormsModule, RouterLink, MoedaPipe],
+  imports: [ReactiveFormsModule, RouterLink, EtapasCheckout, MoedaPipe],
   templateUrl: './pagamento.html',
   styleUrl: './pagamento.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -85,7 +86,12 @@ export class Pagamento {
       .pipe(takeUntilDestroyed())
       .subscribe({
         next: (resumo) => this.resumo.set(resumo),
-        error: () => this.erro.set('Não foi possível carregar o resumo do pedido.'),
+        error: (erro: unknown) =>
+          this.erro.set(
+            erro instanceof CheckoutIncompletoError
+              ? erro.message
+              : 'Não foi possível carregar o resumo do pedido.',
+          ),
       });
   }
 
@@ -137,9 +143,13 @@ export class Pagamento {
           this.enviando.set(false);
           this.router.navigate(['/checkout/success', pedido.id]);
         },
-        error: () => {
+        error: (erro: unknown) => {
           this.enviando.set(false);
-          this.erro.set('Não foi possível finalizar o pedido. Tente novamente.');
+          this.erro.set(
+            erro instanceof CheckoutIncompletoError
+              ? erro.message
+              : 'Não foi possível finalizar o pedido. Tente novamente.',
+          );
         },
       });
   }

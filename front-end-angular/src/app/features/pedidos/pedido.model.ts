@@ -38,12 +38,20 @@ export interface PagamentoPedido {
   status: StatusPagamento;
 }
 
+export interface ItemResumoPedido {
+  produtoId: string;
+  nome: string;
+  quantidade: number;
+}
+
 export interface ResumoPedido {
   id: string;
   criadoEm: string;
   status: StatusPedido;
   quantidadeItens: number;
   total: number;
+  /** Para o cliente reconhecer o pedido pelo que comprou, não só pelo código. */
+  itens: ItemResumoPedido[];
 }
 
 export interface Pedido {

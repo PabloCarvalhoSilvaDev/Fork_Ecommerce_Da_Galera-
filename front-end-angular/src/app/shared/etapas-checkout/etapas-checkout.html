@@ -1,0 +1,36 @@
+<ol class="etapas" aria-label="Etapas da compra">
+  @for (etapa of etapas; track etapa; let i = $index, ultima = $last) {
+    <li
+      class="etapas__item"
+      [class.etapas__item--feita]="i + 1 < atual()"
+      [class.etapas__item--atual]="i + 1 === atual()"
+      [attr.aria-current]="i + 1 === atual() ? 'step' : null"
+    >
+      <span class="etapas__numero" aria-hidden="true">
+        @if (i + 1 < atual()) {
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="m5 12 5 5 9-10"></path>
+          </svg>
+        } @else {
+          {{ i + 1 }}
+        }
+      </span>
+      {{ etapa }}
+      @if (i + 1 < atual()) {
+        <span class="visualmente-oculto">(concluída)</span>
+      }
+    </li>
+    @if (!ultima) {
+      <li class="etapas__separador" aria-hidden="true"></li>
+    }
+  }
+</ol>

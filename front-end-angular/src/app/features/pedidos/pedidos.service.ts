@@ -11,22 +11,58 @@ import { Pedido, ResumoPedido } from './pedido.model';
  */
 @Injectable({ providedIn: 'root' })
 export class PedidosService {
+  /** Pedidos feitos no checkout do mock; ficam no navegador para sobreviver ao F5. */
+  private readonly criados: Pedido[] = lerPedidosCriados();
+
   listar(): Observable<ResumoPedido[]> {
-    const resumos = PEDIDOS_MOCK.map((pedido) => ({
+    const resumos = this.todos().map((pedido) => ({
       id: pedido.id,
       criadoEm: pedido.criadoEm,
       status: pedido.status,
       quantidadeItens: pedido.itens.reduce((soma, item) => soma + item.quantidade, 0),
       total: pedido.total,
+      itens: pedido.itens.map(({ produtoId, nome, quantidade }) => ({
+        produtoId,
+        nome,
+        quantidade,
+      })),
     }));
     return of(resumos).pipe(delay(LATENCIA_MOCK_MS));
   }
 
+  /**
+   * Só para o mock: o pedido finalizado no checkout aparece em "Meus pedidos".
+   * Com o Java, quem cria o pedido é o `POST /api/v1/orders`.
+   */
+  registrar(pedido: Pedido): void {
+    this.criados.unshift(pedido);
+    try {
+      localStorage.setItem(CHAVE_PEDIDOS_CRIADOS, JSON.stringify(this.criados));
+    } catch {
+      // Armazenamento bloqueado: o pedido aparece só até recarregar a página.
+    }
+  }
+
   buscar(id: string): Observable<Pedido> {
-    const pedido = PEDIDOS_MOCK.find((p) => p.id === id);
+    const pedido = this.todos().find((p) => p.id === id);
     return pedido
       ? of(pedido).pipe(delay(LATENCIA_MOCK_MS))
       : throwError(() => new PedidoNaoEncontradoError(id));
+  }
+
+  private todos(): Pedido[] {
+    return [...this.criados, ...PEDIDOS_MOCK];
+  }
+}
+
+const CHAVE_PEDIDOS_CRIADOS = 'ecommerce.pedidos-mock';
+
+function lerPedidosCriados(): Pedido[] {
+  try {
+    const salvos = JSON.parse(localStorage.getItem(CHAVE_PEDIDOS_CRIADOS) ?? '[]');
+    return Array.isArray(salvos) ? (salvos as Pedido[]) : [];
+  } catch {
+    return [];
   }
 }
 

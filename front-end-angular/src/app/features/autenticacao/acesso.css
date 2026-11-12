@@ -1,0 +1,187 @@
+/*
+ * Visual comum de login, esqueci a senha, redefinir senha e escolha de contexto.
+ * Segue o cartão de cadastro (layout de autenticação).
+ */
+.acesso {
+  display: grid;
+  gap: 12px;
+  color: #38251f;
+}
+
+.acesso__cabecalho h1 {
+  margin: 0 0 4px;
+  font-size: 19px;
+  line-height: 1.25;
+}
+
+.acesso__cabecalho p,
+.acesso__texto {
+  margin: 0;
+  color: #796b60;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.acesso__formulario {
+  display: grid;
+  gap: 11px;
+}
+
+.acesso__campo {
+  display: grid;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.acesso__campo-topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.acesso__campo input {
+  width: 100%;
+  min-height: 36px;
+  padding: 8px 10px;
+  border: 1px solid #cdbeb1;
+  border-radius: 9px;
+  background: #fff;
+  color: #38251f;
+  font: inherit;
+  font-weight: 400;
+}
+
+.acesso__campo input:focus-visible {
+  border-color: #c7441d;
+  outline: 2px solid rgb(199 68 29 / 18%);
+  outline-offset: 1px;
+}
+
+.acesso__campo--invalido input {
+  border-color: #c62828;
+  background: #fff8f7;
+}
+
+.acesso__campo small {
+  color: #b42318;
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.acesso__botao {
+  min-height: 39px;
+  border: 0;
+  border-radius: 9px;
+  background: #c7441d;
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+a.acesso__botao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.acesso__botao:hover:not(:disabled) {
+  background: #ad3918;
+  color: #fff;
+}
+
+.acesso__botao:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.acesso__botao:focus-visible {
+  outline: 2px solid #c7441d;
+  outline-offset: 2px;
+}
+
+.acesso__link {
+  color: #c7441d;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.acesso__link:hover {
+  color: #ad3918;
+}
+
+.acesso__rodape {
+  margin: 0;
+  color: #796b60;
+  font-size: 11px;
+  text-align: center;
+}
+
+.acesso__separador {
+  padding-top: 12px;
+  border-top: 1px solid #f1e7da;
+}
+
+.acesso__caixa {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f6ede1;
+  color: #4a3528;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.acesso__caixa svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.acesso__caixa--erro {
+  background: #fbe3df;
+  color: #8a1f16;
+}
+
+.acesso__caixa--erro a {
+  color: inherit;
+}
+
+.acesso__caixa--sucesso {
+  background: #dcefe5;
+  color: #1e6a4d;
+}
+
+.acesso__senha {
+  position: relative;
+}
+
+.acesso__senha input {
+  padding-right: 38px;
+}
+
+.acesso__mostrar-senha {
+  position: absolute;
+  top: 50%;
+  right: 9px;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: #796b60;
+  cursor: pointer;
+}
+
+.acesso__mostrar-senha:hover {
+  color: #c7441d;
+}

@@ -1,0 +1,36 @@
+<nav class="categorias" aria-label="Categorias">
+  <ul class="categorias__lista">
+    <li>
+      <a routerLink="/catalog/search" class="categorias__todas">
+        <svg
+          aria-hidden="true"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="3" y="3" width="6" height="6" rx="1"></rect>
+          <rect x="15" y="15" width="6" height="6" rx="1"></rect>
+          <path d="M6 9v9h9"></path>
+        </svg>
+        Todas as categorias
+      </a>
+    </li>
+    @for (categoria of categorias; track categoria.slug) {
+      <li>
+        <a
+          routerLink="/catalog/search"
+          [queryParams]="{ categoria: categoria.slug }"
+          routerLinkActive="categorias__chip--ativo"
+          ariaCurrentWhenActive="page"
+          class="categorias__chip"
+          >{{ categoria.nome }}</a
+        >
+      </li>
+    }
+  </ul>
+</nav>

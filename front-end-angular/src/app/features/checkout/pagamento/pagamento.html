@@ -1,21 +1,5 @@
 <div class="pagamento">
-  <ol class="etapas" aria-label="Etapas da compra">
-    <li class="etapas__item etapas__item--feita">
-      <span class="etapas__numero" aria-hidden="true">✓</span>Carrinho
-    </li>
-    <li class="etapas__separador" aria-hidden="true"></li>
-    <li class="etapas__item etapas__item--feita">
-      <span class="etapas__numero" aria-hidden="true">✓</span>Endereço
-    </li>
-    <li class="etapas__separador" aria-hidden="true"></li>
-    <li class="etapas__item etapas__item--atual" aria-current="step">
-      <span class="etapas__numero" aria-hidden="true">3</span>Pagamento
-    </li>
-    <li class="etapas__separador" aria-hidden="true"></li>
-    <li class="etapas__item">
-      <span class="etapas__numero" aria-hidden="true">4</span>Confirmação
-    </li>
-  </ol>
+  <app-etapas-checkout [atual]="3" />
 
   <div class="pagamento__colunas">
     <section class="pagamento__principal">
@@ -226,12 +210,15 @@
             <dd>{{ resumo.total | moeda }}</dd>
           </div>
         </dl>
-      } @else {
+      } @else if (!erro()) {
         <p class="resumo__aviso" role="status">Carregando resumo…</p>
       }
 
       @if (erro()) {
         <p class="resumo__erro" role="alert">{{ erro() }}</p>
+        @if (!resumo()) {
+          <a class="resumo__nota" routerLink="/checkout/cart">Voltar ao carrinho</a>
+        }
       }
 
       <button

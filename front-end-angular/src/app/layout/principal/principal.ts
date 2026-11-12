@@ -1,16 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { RouterLink, RouterOutlet } from '@angular/router';
-import { Sessao } from '../../core/sessao/sessao';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { BarraCategorias } from '../barra-categorias/barra-categorias';
+import { Cabecalho } from '../cabecalho/cabecalho';
 
 @Component({
   selector: 'app-principal',
-  imports: [RouterLink, RouterOutlet],
+  imports: [RouterOutlet, Cabecalho, BarraCategorias],
   templateUrl: './principal.html',
   styleUrl: './principal.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Principal {
-  private readonly sessao = inject(Sessao);
-
-  protected readonly nomeUsuario = computed(() => this.sessao.usuario()?.fullName ?? null);
-}
+export class Principal {}

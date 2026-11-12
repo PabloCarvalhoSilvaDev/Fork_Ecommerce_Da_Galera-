@@ -74,11 +74,147 @@ tbody tr:last-child td {
   border-bottom: 0;
 }
 
-.pedidos__codigo a {
-  color: var(--achei-urucum);
-  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  font-size: 13px;
+/* Produto (usado na tabela e nos cartões) */
+.produto {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.produto__miniatura {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--achei-linha-suave);
+  color: var(--achei-linha-forte);
+}
+
+.produto__miniatura--pequena {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+}
+
+.produto__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.produto__nome {
+  overflow: hidden;
+  color: var(--achei-cacau);
   font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+a.produto__nome {
+  text-decoration: none;
+}
+
+a.produto__nome:hover {
+  color: var(--achei-urucum);
+  text-decoration: underline;
+}
+
+.produto__outros {
+  color: var(--achei-cacau-suave);
+  font-size: 12px;
+}
+
+.produto__codigo {
+  color: var(--achei-cacau-suave);
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-size: 11px;
+}
+
+/* A coluna do produto pode encolher; as outras ficam numa linha só. */
+td:first-child {
+  max-width: 380px;
+  white-space: normal;
+}
+
+/* Cartões (celular) */
+.pedidos__cartoes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cartao-pedido {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--achei-linha);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.cartao-pedido__topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--achei-linha-suave);
+  color: var(--achei-cacau-suave);
+  font-size: 12px;
+}
+
+.cartao-pedido__topo strong {
+  color: var(--achei-cacau);
+}
+
+.cartao-pedido__status {
+  margin-left: auto;
+}
+
+.cartao-pedido__itens {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+.cartao-pedido__base {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cartao-pedido__total {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* Troca de formato: cartões até 767px, tabela a partir de 768px. */
+.pedidos__tabela {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .pedidos__tabela {
+    display: block;
+  }
+
+  .pedidos__cartoes {
+    display: none;
+  }
 }
 
 .pedidos__acoes {

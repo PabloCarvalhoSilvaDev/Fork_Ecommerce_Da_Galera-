@@ -1,0 +1,200 @@
+.cabecalho {
+  border-bottom: 1px solid var(--achei-linha);
+  background: #fff;
+  color: var(--achei-cacau);
+}
+
+/* Celular: marca + ações na 1ª linha, busca ocupando a 2ª inteira. */
+.cabecalho__conteudo {
+  display: grid;
+  grid-template-areas:
+    'marca acoes'
+    'busca busca';
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px 12px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px 16px;
+}
+
+.cabecalho__marca {
+  display: flex;
+  grid-area: marca;
+}
+
+.cabecalho__marca svg {
+  width: 112px;
+  height: auto;
+}
+
+.cabecalho__busca {
+  display: flex;
+  grid-area: busca;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--achei-linha-forte);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--achei-cacau-suave);
+}
+
+.cabecalho__busca:focus-within {
+  border-color: var(--achei-urucum);
+  outline: 2px solid rgb(194 68 28 / 20%);
+  outline-offset: 1px;
+}
+
+.cabecalho__busca input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--achei-cacau);
+  font: inherit;
+  font-size: 14px;
+}
+
+.cabecalho__acoes {
+  display: flex;
+  grid-area: acoes;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+  font-size: 14px;
+}
+
+.cabecalho__link,
+.cabecalho__sair {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 44px;
+  min-height: 44px;
+  justify-content: center;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--achei-cacau);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.cabecalho__link:hover,
+.cabecalho__sair:hover:not(:disabled) {
+  background: var(--achei-areia);
+}
+
+.cabecalho__link--ativo {
+  color: var(--achei-urucum);
+  font-weight: 600;
+}
+
+.cabecalho__sair {
+  color: var(--achei-cacau-suave);
+}
+
+.cabecalho__sair:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.cabecalho__contador {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--achei-urucum);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.cabecalho__usuario {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 0 4px;
+}
+
+.cabecalho__nome {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cabecalho__entrar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  margin-left: 4px;
+  padding: 0 14px;
+  border: 1px solid var(--achei-linha-forte);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--achei-cacau);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.cabecalho__entrar:hover {
+  background: var(--achei-areia);
+}
+
+.cabecalho a:focus-visible,
+.cabecalho button:focus-visible {
+  outline: 2px solid var(--achei-urucum);
+  outline-offset: 2px;
+}
+
+/* No celular, "Meus pedidos", "Sair" e a saudação viram só ícone. */
+.cabecalho__texto-opcional {
+  display: none;
+}
+
+@media (max-width: 599px) {
+  .cabecalho__usuario {
+    display: none;
+  }
+}
+
+/* Tablet em diante: tudo numa linha, como no protótipo. */
+@media (min-width: 600px) {
+  .cabecalho__conteudo {
+    grid-template-areas: 'marca busca acoes';
+    grid-template-columns: auto minmax(180px, 1fr) auto;
+    gap: 16px;
+    min-height: 68px;
+    padding: 10px 24px;
+  }
+
+  .cabecalho__marca svg {
+    width: 132px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cabecalho__conteudo {
+    gap: 24px;
+    padding: 10px 32px;
+  }
+
+  .cabecalho__marca svg {
+    width: 152px;
+  }
+
+  .cabecalho__acoes {
+    gap: 12px;
+  }
+
+  .cabecalho__texto-opcional {
+    display: inline;
+  }
+}

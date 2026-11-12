@@ -1,0 +1,62 @@
+:host {
+  display: block;
+  flex: 1 1 280px;
+  align-self: flex-start;
+  max-width: 380px;
+}
+
+/* No celular o resumo ocupa a largura toda, abaixo da lista. */
+@media (max-width: 699px) {
+  :host {
+    max-width: none;
+  }
+}
+
+.resumo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+  border: 1px solid var(--achei-linha);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--achei-cacau);
+}
+
+.resumo__titulo {
+  margin: 0;
+  font-size: 18px;
+}
+
+.resumo__linhas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+}
+
+.resumo__linha {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.resumo__linha dt {
+  color: var(--achei-cacau-suave);
+}
+
+.resumo__linha dd {
+  margin: 0;
+}
+
+.resumo__linha--total {
+  padding-top: 12px;
+  border-top: 1px solid var(--achei-linha);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.resumo__linha--total dt {
+  color: var(--achei-cacau);
+}

@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { exigeLogin } from './core/sessao/exige-login';
 import { Autenticacao } from './layout/autenticacao/autenticacao';
 import { Principal } from './layout/principal/principal';
 
@@ -11,7 +12,7 @@ export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'auth/register',
+    redirectTo: 'catalog/home',
   },
   {
     path: '',
@@ -43,29 +44,34 @@ export const routes: Routes = [
       },
       {
         path: 'checkout/address',
+        canActivate: [exigeLogin],
         title: 'Endereço de Entrega',
         loadComponent: () =>
           import('./features/checkout/endereco/endereco').then((m) => m.Endereco),
       },
       {
         path: 'checkout/payment',
+        canActivate: [exigeLogin],
         title: 'Pagamento',
         loadComponent: () =>
           import('./features/checkout/pagamento/pagamento').then((m) => m.Pagamento),
       },
       {
         path: 'checkout/success/:orderId',
+        canActivate: [exigeLogin],
         title: 'Confirmação de Compra',
         loadComponent: () =>
           import('./features/checkout/confirmacao/confirmacao').then((m) => m.Confirmacao),
       },
       {
         path: 'account/orders',
+        canActivate: [exigeLogin],
         title: 'Meus Pedidos',
         loadComponent: () => import('./features/pedidos/lista/lista').then((m) => m.Lista),
       },
       {
         path: 'account/orders/:orderId',
+        canActivate: [exigeLogin],
         title: 'Detalhes do Pedido',
         loadComponent: () => import('./features/pedidos/detalhe/detalhe').then((m) => m.Detalhe),
       },
@@ -120,6 +126,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'auth/register',
+    redirectTo: 'catalog/home',
   },
 ];

@@ -1,1 +1,199 @@
-<p>endereco works!</p>
+<div class="endereco">
+  <app-etapas-checkout [atual]="2" />
+
+  @if (carrinho.vazio()) {
+    <div class="vazio cartao">
+      <h1 class="titulo-pagina">Seu carrinho está vazio</h1>
+      <p class="texto-suave">Adicione produtos antes de escolher onde entregar.</p>
+      <a class="botao botao--primario" routerLink="/catalog/home">Ver produtos</a>
+    </div>
+  } @else {
+    <div class="endereco__colunas">
+      <section class="endereco__principal">
+        <fieldset class="opcoes">
+          <legend class="titulo-pagina opcoes__titulo">Onde entregar?</legend>
+          @for (item of enderecos.enderecos(); track item.id) {
+            <label
+              class="opcao cartao"
+              [class.opcao--selecionada]="enderecos.selecionado()?.id === item.id"
+            >
+              <input
+                type="radio"
+                name="endereco"
+                [checked]="enderecos.selecionado()?.id === item.id"
+                (change)="enderecos.selecionar(item.id)"
+              />
+              <span class="opcao__texto">
+                <span class="opcao__nome">
+                  {{ item.apelido ?? 'Endereço' }}
+                  @if (item.padrao) {
+                    <span class="opcao__selo">Padrão</span>
+                  }
+                </span>
+                <span class="texto-suave">{{ linhaEndereco(item) }}</span>
+                <span class="texto-suave">{{ linhaCidade(item) }}</span>
+              </span>
+            </label>
+          }
+        </fieldset>
+
+        <section class="novo cartao" aria-labelledby="novo-endereco">
+          <button
+            type="button"
+            id="novo-endereco"
+            class="novo__alternar"
+            aria-controls="novo-endereco-formulario"
+            [attr.aria-expanded]="formularioAberto()"
+            (click)="formularioAberto.set(!formularioAberto())"
+          >
+            <svg
+              aria-hidden="true"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            >
+              <path d="M12 5v14M5 12h14"></path>
+            </svg>
+            Novo endereço
+          </button>
+
+          @if (formularioAberto()) {
+            <form
+              id="novo-endereco-formulario"
+              class="formulario"
+              [formGroup]="form"
+              (ngSubmit)="salvar()"
+              novalidate
+            >
+              <div class="campo campo--2">
+                <label for="cep">CEP</label>
+                <input
+                  id="cep"
+                  formControlName="cep"
+                  inputmode="numeric"
+                  autocomplete="postal-code"
+                  placeholder="00000-000"
+                  [attr.aria-invalid]="campoInvalido('cep')"
+                  aria-describedby="cep-dica"
+                  (input)="formatarCep($event)"
+                />
+                <small id="cep-dica" [class.campo__erro]="campoInvalido('cep')">
+                  {{ campoInvalido('cep') ? 'Informe os 8 dígitos do CEP.' : '8 dígitos' }}
+                </small>
+              </div>
+              <div class="campo campo--4">
+                <label for="rua">Rua</label>
+                <input
+                  id="rua"
+                  formControlName="rua"
+                  autocomplete="address-line1"
+                  [attr.aria-invalid]="campoInvalido('rua')"
+                />
+                @if (campoInvalido('rua')) {
+                  <small class="campo__erro">Informe a rua.</small>
+                }
+              </div>
+              <div class="campo campo--2">
+                <label for="numero">Número</label>
+                <input
+                  id="numero"
+                  formControlName="numero"
+                  [attr.aria-invalid]="campoInvalido('numero')"
+                />
+                @if (campoInvalido('numero')) {
+                  <small class="campo__erro">Informe o número.</small>
+                }
+              </div>
+              <div class="campo campo--4">
+                <label for="complemento"
+                  >Complemento <span class="texto-suave">(opcional)</span></label
+                >
+                <input
+                  id="complemento"
+                  formControlName="complemento"
+                  autocomplete="address-line2"
+                />
+              </div>
+              <div class="campo campo--3">
+                <label for="bairro">Bairro</label>
+                <input
+                  id="bairro"
+                  formControlName="bairro"
+                  [attr.aria-invalid]="campoInvalido('bairro')"
+                />
+                @if (campoInvalido('bairro')) {
+                  <small class="campo__erro">Informe o bairro.</small>
+                }
+              </div>
+              <div class="campo campo--3">
+                <label for="cidade">Cidade</label>
+                <input
+                  id="cidade"
+                  formControlName="cidade"
+                  autocomplete="address-level2"
+                  [attr.aria-invalid]="campoInvalido('cidade')"
+                />
+                @if (campoInvalido('cidade')) {
+                  <small class="campo__erro">Informe a cidade.</small>
+                }
+              </div>
+              <div class="campo campo--2">
+                <label for="uf">UF</label>
+                <select
+                  id="uf"
+                  formControlName="uf"
+                  autocomplete="address-level1"
+                  [attr.aria-invalid]="campoInvalido('uf')"
+                >
+                  <option value="" disabled>Escolha</option>
+                  @for (uf of ufs; track uf) {
+                    <option [value]="uf">{{ uf }}</option>
+                  }
+                </select>
+                @if (campoInvalido('uf')) {
+                  <small class="campo__erro">Escolha a UF.</small>
+                }
+              </div>
+              <div class="campo campo--4">
+                <label for="apelido"
+                  >Nome do endereço <span class="texto-suave">(opcional)</span></label
+                >
+                <input id="apelido" formControlName="apelido" placeholder="Casa, Trabalho…" />
+              </div>
+              <label class="padrao campo--6">
+                <input type="checkbox" formControlName="padrao" />
+                Tornar padrão
+              </label>
+              <div class="campo--6">
+                <button type="submit" class="botao botao--secundario botao--pequeno">
+                  Salvar endereço
+                </button>
+              </div>
+            </form>
+          }
+        </section>
+      </section>
+
+      <app-resumo-compra
+        [quantidadeItens]="carrinho.quantidadeItens()"
+        [subtotal]="carrinho.subtotal()"
+      >
+        @if (enderecos.selecionado()) {
+          <a class="botao botao--primario botao--largo" routerLink="/checkout/payment">
+            Continuar para pagamento
+          </a>
+        } @else {
+          <button type="button" class="botao botao--primario botao--largo" disabled>
+            Continuar para pagamento
+          </button>
+          <p class="endereco__nota texto-suave">Escolha ou cadastre um endereço.</p>
+        }
+        <a class="endereco__voltar" routerLink="/checkout/cart">Voltar ao carrinho</a>
+      </app-resumo-compra>
+    </div>
+  }
+</div>

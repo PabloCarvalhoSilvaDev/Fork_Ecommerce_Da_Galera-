@@ -9,61 +9,6 @@
   color: var(--achei-urucum);
 }
 
-/* Etapas */
-.etapas {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  font-size: 14px;
-  list-style: none;
-}
-
-.etapas__item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--achei-cacau-suave);
-}
-
-.etapas__numero {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border: 1px solid var(--achei-linha-forte);
-  border-radius: 999px;
-  background: #fff;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.etapas__item--feita .etapas__numero {
-  border-color: var(--achei-urucum-claro);
-  background: var(--achei-urucum-claro);
-  color: var(--achei-cacau);
-}
-
-.etapas__item--atual {
-  color: var(--achei-cacau);
-  font-weight: 600;
-}
-
-.etapas__item--atual .etapas__numero {
-  border-color: var(--achei-urucum);
-  background: var(--achei-urucum);
-  color: #fff;
-}
-
-.etapas__separador {
-  width: 32px;
-  height: 1px;
-  background: var(--achei-linha-forte);
-}
-
 /* Colunas */
 .pagamento__colunas {
   display: flex;

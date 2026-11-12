@@ -1,14 +1,6 @@
 <div class="principal">
-  <header class="principal__cabecalho">
-    <!-- TODO: definir o destino do clique na marca; por ora não é link. -->
-    <span class="principal__marca">E-commerce da Galera</span>
-
-    @if (nomeUsuario(); as nome) {
-      <span class="principal__usuario">{{ nome }}</span>
-    } @else {
-      <a routerLink="/auth/login" class="principal__usuario principal__entrar">Entrar</a>
-    }
-  </header>
+  <app-cabecalho />
+  <app-barra-categorias />
 
   <main class="principal__conteudo">
     <router-outlet />

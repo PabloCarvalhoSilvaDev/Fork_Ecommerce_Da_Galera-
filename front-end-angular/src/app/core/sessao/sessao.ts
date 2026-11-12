@@ -1,4 +1,6 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { Observable, catchError, map, of } from 'rxjs';
 
 export interface UsuarioSessao {
   id: string;
@@ -21,6 +23,7 @@ const CHAVE_ARMAZENAMENTO = 'ecommerce.sessao';
  */
 @Injectable({ providedIn: 'root' })
 export class Sessao {
+  private readonly http = inject(HttpClient);
   private readonly sessao = signal<SessaoSalva | null>(lerSessaoSalva());
 
   readonly usuario = computed(() => this.sessao()?.usuario ?? null);
@@ -35,6 +38,24 @@ export class Sessao {
     } catch {
       // Navegação privada/armazenamento bloqueado: a sessão vale só nesta aba.
     }
+  }
+
+  /**
+   * Logout: avisa o Node (`POST /auth/logout` põe o jti na deny-list) e limpa a
+   * sessão local mesmo se a chamada falhar (sem rede, token já vencido...).
+   */
+  sair(): Observable<void> {
+    const token = this.token();
+    this.encerrar();
+    if (!token) {
+      return of(undefined);
+    }
+    return this.http
+      .post('/auth/logout', null, { headers: { Authorization: `Bearer ${token}` } })
+      .pipe(
+        map(() => undefined),
+        catchError(() => of(undefined)),
+      );
   }
 
   encerrar(): void {

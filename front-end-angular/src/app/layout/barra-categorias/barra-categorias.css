@@ -1,0 +1,82 @@
+.categorias {
+  border-bottom: 1px solid var(--achei-linha);
+  background: #fff;
+}
+
+/* No celular os chips rolam para o lado em vez de quebrar em várias linhas. */
+.categorias__lista {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px 16px;
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: none;
+}
+
+.categorias__lista::-webkit-scrollbar {
+  display: none;
+}
+
+.categorias__lista li {
+  flex: none;
+}
+
+.categorias__todas,
+.categorias__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--achei-linha-forte);
+  background: #fff;
+  color: var(--achei-cacau);
+  font-size: 13px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.categorias__todas {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 14px;
+  font-weight: 600;
+}
+
+.categorias__chip {
+  min-height: 32px;
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+
+.categorias__todas:hover,
+.categorias__chip:hover {
+  background: var(--achei-areia);
+}
+
+.categorias__chip--ativo,
+.categorias__chip--ativo:hover {
+  border-color: #e9b79c;
+  background: var(--achei-urucum-claro);
+  font-weight: 600;
+}
+
+.categorias a:focus-visible {
+  outline: 2px solid var(--achei-urucum);
+  outline-offset: 2px;
+}
+
+@media (min-width: 600px) {
+  .categorias__lista {
+    flex-wrap: wrap;
+    padding: 12px 24px;
+    overflow-x: visible;
+  }
+}
+
+@media (min-width: 1024px) {
+  .categorias__lista {
+    padding: 12px 32px;
+  }
+}
