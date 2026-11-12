@@ -55,7 +55,7 @@ export const routes: Routes = [
           import('./features/checkout/pagamento/pagamento').then((m) => m.Pagamento),
       },
       {
-        path: 'detalhes-pedido',
+        path: 'detalhes-pedido/:id',
         title: 'Detalhes do Pedido',
         loadComponent: () => import('./features/pedidos/detalhe/detalhe').then((m) => m.Detalhe),
       },

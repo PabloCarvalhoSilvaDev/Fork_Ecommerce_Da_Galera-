@@ -1,0 +1,254 @@
+.detalhe {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: var(--achei-cacau);
+}
+
+.detalhe a {
+  color: var(--achei-urucum);
+}
+
+.detalhe__voltar {
+  font-size: 13px;
+}
+
+.detalhe__aviso {
+  margin: 0;
+  color: var(--achei-cacau-suave);
+}
+
+.detalhe__aviso--erro {
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: var(--achei-erro-claro);
+  color: var(--achei-erro);
+}
+
+.detalhe__cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.detalhe__cabecalho h1 {
+  margin: 0;
+  font-size: 26px;
+  letter-spacing: -0.01em;
+}
+
+.detalhe__codigo {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-size: 22px;
+}
+
+.detalhe__data {
+  margin-left: auto;
+  color: var(--achei-cacau-suave);
+  font-size: 13px;
+}
+
+.cartao {
+  padding: 20px;
+  border: 1px solid var(--achei-linha);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.cartao h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
+.detalhe__linha {
+  padding: 24px;
+}
+
+.detalhe__encerrado {
+  margin: 0;
+  color: var(--achei-erro);
+  font-weight: 600;
+}
+
+/* Linha do tempo */
+.linha-tempo {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  list-style: none;
+}
+
+.linha-tempo__etapa {
+  position: relative;
+  display: flex;
+  flex: 1 0 110px;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 8px;
+}
+
+/* traço até a próxima etapa */
+.linha-tempo__etapa:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 13px;
+  left: 36px;
+  right: 8px;
+  height: 2px;
+  background: var(--achei-linha);
+}
+
+.linha-tempo__etapa--concluida:not(.linha-tempo__etapa--atual)::after {
+  background: var(--achei-urucum);
+}
+
+.linha-tempo__marcador {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--achei-linha-forte);
+  border-radius: 999px;
+  background: #fff;
+  color: #fff;
+}
+
+.linha-tempo__etapa--concluida .linha-tempo__marcador {
+  border-color: var(--achei-urucum);
+  background: var(--achei-urucum);
+}
+
+.linha-tempo__rotulo {
+  color: var(--achei-cacau-suave);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.linha-tempo__etapa--concluida .linha-tempo__rotulo {
+  color: var(--achei-cacau);
+}
+
+.linha-tempo__etapa--atual .linha-tempo__rotulo {
+  font-weight: 700;
+}
+
+.linha-tempo__data {
+  color: var(--achei-cacau-suave);
+  font-size: 13px;
+}
+
+/* Colunas */
+.detalhe__colunas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.detalhe__itens {
+  flex: 999 1 420px;
+  min-width: 0;
+}
+
+.detalhe__lateral {
+  display: flex;
+  flex: 1 1 260px;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.itens {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.itens__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--achei-linha-suave);
+}
+
+.itens__imagem {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--achei-linha-suave);
+  color: var(--achei-linha-forte);
+}
+
+.itens__info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.itens__nome {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.itens__sku {
+  color: var(--achei-cacau-suave);
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-size: 12px;
+}
+
+.itens__preco {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.totais {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--achei-linha);
+}
+
+.totais__linha {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.totais__linha dt {
+  color: var(--achei-cacau-suave);
+}
+
+.totais__linha dd {
+  margin: 0;
+}
+
+.totais__linha--total {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.totais__linha--total dt {
+  color: var(--achei-cacau);
+}
+
+.detalhe__endereco {
+  color: var(--achei-cacau-suave);
+  font-size: 13px;
+  font-style: normal;
+  line-height: 1.6;
+}
+
+.detalhe__pagamento {
+  margin: 0;
+  font-size: 13px;
+}

@@ -1,1 +1,55 @@
-<p>lista works!</p>
+<section class="pedidos">
+  <h1 class="pedidos__titulo">Meus pedidos</h1>
+
+  @if (carregando()) {
+    <p class="pedidos__aviso" role="status">Carregando seus pedidos…</p>
+  } @else if (erro()) {
+    <p class="pedidos__aviso pedidos__aviso--erro" role="alert">
+      Não foi possível carregar seus pedidos. Tente novamente mais tarde.
+    </p>
+  } @else if (pedidos().length === 0) {
+    <div class="pedidos__vazio">
+      <p>Você ainda não fez nenhum pedido.</p>
+      <a routerLink="/vitrine" class="botao botao--primario">Ver produtos</a>
+    </div>
+  } @else {
+    <div class="pedidos__tabela">
+      <table>
+        <caption class="visualmente-oculto">
+          Histórico de pedidos
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Pedido</th>
+            <th scope="col">Data</th>
+            <th scope="col">Itens</th>
+            <th scope="col">Total</th>
+            <th scope="col">Status</th>
+            <th scope="col"><span class="visualmente-oculto">Ações</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (pedido of pedidos(); track pedido.id) {
+            <tr>
+              <td class="pedidos__codigo">
+                <a [routerLink]="['/detalhes-pedido', pedido.id]">{{ codigo(pedido.id) }}</a>
+              </td>
+              <td>{{ pedido.criadoEm | data }}</td>
+              <td>{{ pedido.quantidadeItens }}</td>
+              <td>{{ pedido.total | moeda }}</td>
+              <td><app-status-pedido [status]="pedido.status" /></td>
+              <td class="pedidos__acoes">
+                <a
+                  [routerLink]="['/detalhes-pedido', pedido.id]"
+                  class="botao botao--secundario"
+                  [attr.aria-label]="'Detalhes do pedido ' + codigo(pedido.id)"
+                  >Detalhes</a
+                >
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

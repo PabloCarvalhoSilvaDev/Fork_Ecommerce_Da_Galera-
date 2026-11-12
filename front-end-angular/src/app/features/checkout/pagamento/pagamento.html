@@ -1,1 +1,259 @@
-<p>pagamento works!</p>
+<div class="pagamento">
+  <ol class="etapas" aria-label="Etapas da compra">
+    <li class="etapas__item etapas__item--feita">
+      <span class="etapas__numero" aria-hidden="true">✓</span>Carrinho
+    </li>
+    <li class="etapas__separador" aria-hidden="true"></li>
+    <li class="etapas__item etapas__item--feita">
+      <span class="etapas__numero" aria-hidden="true">✓</span>Endereço
+    </li>
+    <li class="etapas__separador" aria-hidden="true"></li>
+    <li class="etapas__item etapas__item--atual" aria-current="step">
+      <span class="etapas__numero" aria-hidden="true">3</span>Pagamento
+    </li>
+    <li class="etapas__separador" aria-hidden="true"></li>
+    <li class="etapas__item">
+      <span class="etapas__numero" aria-hidden="true">4</span>Confirmação
+    </li>
+  </ol>
+
+  <div class="pagamento__colunas">
+    <section class="pagamento__principal">
+      <fieldset class="metodos">
+        <legend class="pagamento__titulo">Como você quer pagar?</legend>
+        @for (opcao of opcoes; track opcao.metodo) {
+          <label class="metodo" [class.metodo--selecionado]="metodo() === opcao.metodo">
+            <span class="metodo__topo">
+              <span class="metodo__icone" aria-hidden="true">
+                @switch (opcao.metodo) {
+                  @case ('PIX') {
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="m12 3 9 9-9 9-9-9 9-9z"></path>
+                      <path d="m8 12 4-4 4 4-4 4z"></path>
+                    </svg>
+                  }
+                  @case ('CREDIT_CARD') {
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                      <path d="M2 10h20"></path>
+                    </svg>
+                  }
+                  @case ('BOLETO') {
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M4 5v14M7 5v14M11 5v14M14 5v14M18 5v14M20 5v14"></path>
+                    </svg>
+                  }
+                }
+              </span>
+              <input
+                type="radio"
+                name="metodo"
+                [value]="opcao.metodo"
+                [checked]="metodo() === opcao.metodo"
+                (change)="escolher(opcao.metodo)"
+              />
+            </span>
+            <span class="metodo__titulo">{{ opcao.titulo }}</span>
+            <span class="metodo__descricao">{{ opcao.descricao }}</span>
+          </label>
+        }
+      </fieldset>
+
+      @if (pagaComCartao()) {
+        <form
+          class="cartao cartao-credito"
+          [formGroup]="cartao"
+          (ngSubmit)="finalizar()"
+          novalidate
+        >
+          <h2 class="cartao__titulo">Dados do cartão</h2>
+          <div class="cartao-credito__grade">
+            <div class="campo campo--inteiro">
+              <label for="cartao-numero">Número do cartão</label>
+              <input
+                id="cartao-numero"
+                type="text"
+                inputmode="numeric"
+                autocomplete="cc-number"
+                placeholder="0000 0000 0000 0000"
+                formControlName="numero"
+                (input)="formatarNumero($event)"
+                [attr.aria-invalid]="campoInvalido('numero')"
+                [attr.aria-describedby]="campoInvalido('numero') ? 'cartao-numero-erro' : null"
+              />
+              @if (campoInvalido('numero')) {
+                <span id="cartao-numero-erro" class="campo__erro"
+                  >Informe os 16 dígitos do cartão.</span
+                >
+              }
+            </div>
+            <div class="campo campo--metade">
+              <label for="cartao-nome">Nome impresso</label>
+              <input
+                id="cartao-nome"
+                type="text"
+                autocomplete="cc-name"
+                formControlName="nome"
+                [attr.aria-invalid]="campoInvalido('nome')"
+                [attr.aria-describedby]="campoInvalido('nome') ? 'cartao-nome-erro' : null"
+              />
+              @if (campoInvalido('nome')) {
+                <span id="cartao-nome-erro" class="campo__erro"
+                  >Informe o nome como está no cartão.</span
+                >
+              }
+            </div>
+            <div class="campo">
+              <label for="cartao-validade">Validade</label>
+              <input
+                id="cartao-validade"
+                type="text"
+                inputmode="numeric"
+                autocomplete="cc-exp"
+                placeholder="MM/AA"
+                formControlName="validade"
+                (input)="formatarValidade($event)"
+                [attr.aria-invalid]="campoInvalido('validade')"
+                [attr.aria-describedby]="campoInvalido('validade') ? 'cartao-validade-erro' : null"
+              />
+              @if (campoInvalido('validade')) {
+                <span id="cartao-validade-erro" class="campo__erro">
+                  {{
+                    cartao.controls.validade.hasError('vencido') ? 'Cartão vencido.' : 'Use MM/AA.'
+                  }}
+                </span>
+              }
+            </div>
+            <div class="campo">
+              <label for="cartao-cvv">CVV</label>
+              <input
+                id="cartao-cvv"
+                type="text"
+                inputmode="numeric"
+                autocomplete="cc-csc"
+                formControlName="cvv"
+                (input)="formatarCvv($event)"
+                [attr.aria-invalid]="campoInvalido('cvv')"
+                [attr.aria-describedby]="campoInvalido('cvv') ? 'cartao-cvv-erro' : null"
+              />
+              @if (campoInvalido('cvv')) {
+                <span id="cartao-cvv-erro" class="campo__erro">3 ou 4 dígitos.</span>
+              }
+            </div>
+          </div>
+        </form>
+      }
+
+      @if (resumo(); as resumo) {
+        <div class="cartao entrega">
+          <span class="entrega__icone" aria-hidden="true">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M2 6h12v10H2zM14 10h4l3 3v3h-7"></path>
+              <circle cx="6" cy="18" r="2"></circle>
+              <circle cx="17" cy="18" r="2"></circle>
+            </svg>
+          </span>
+          <div>
+            <p class="entrega__titulo">
+              Entrega em {{ resumo.endereco.apelido ?? 'endereço cadastrado' }}
+            </p>
+            <p class="entrega__endereco">
+              {{ resumo.endereco.rua }}, {{ resumo.endereco.numero }}
+              @if (resumo.endereco.complemento) {
+                — {{ resumo.endereco.complemento }}
+              }
+              · CEP {{ cepFormatado() }} ·
+              <a routerLink="/endereco">alterar</a>
+            </p>
+          </div>
+        </div>
+      }
+    </section>
+
+    <aside class="cartao resumo" aria-labelledby="resumo-titulo">
+      <h2 id="resumo-titulo" class="cartao__titulo">Resumo</h2>
+      @if (resumo(); as resumo) {
+        <dl class="resumo__linhas">
+          <div class="resumo__linha">
+            <dt>Subtotal ({{ resumo.quantidadeItens }} itens)</dt>
+            <dd>{{ resumo.subtotal | moeda }}</dd>
+          </div>
+          <div class="resumo__linha">
+            <dt>Frete</dt>
+            <dd>{{ resumo.frete === 0 ? 'Grátis' : (resumo.frete | moeda) }}</dd>
+          </div>
+          <div class="resumo__linha resumo__linha--total">
+            <dt>Total</dt>
+            <dd>{{ resumo.total | moeda }}</dd>
+          </div>
+        </dl>
+      } @else {
+        <p class="resumo__aviso" role="status">Carregando resumo…</p>
+      }
+
+      @if (erro()) {
+        <p class="resumo__erro" role="alert">{{ erro() }}</p>
+      }
+
+      <button
+        type="button"
+        class="botao-finalizar"
+        [disabled]="enviando() || !resumo()"
+        (click)="finalizar()"
+      >
+        <svg
+          aria-hidden="true"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="5" y="11" width="14" height="10" rx="2"></rect>
+          <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
+        </svg>
+        {{ enviando() ? 'Finalizando…' : 'Finalizar pedido' }}
+      </button>
+      <p class="resumo__nota">Ao finalizar, o estoque fica reservado para você.</p>
+    </aside>
+  </div>
+</div>
