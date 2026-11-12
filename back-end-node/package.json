@@ -7,7 +7,7 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsx watch src/server.ts",
     "start": "node dist/server.js",
-    "test": "tsx --test src/modules/auth/register.schema.test.ts src/modules/auth/register.conflict.test.ts"
+    "test": "tsx --test src/modules/auth/register.schema.test.ts src/modules/auth/register.conflict.test.ts src/modules/auth/login.schema.test.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
