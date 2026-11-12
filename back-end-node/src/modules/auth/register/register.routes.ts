@@ -1,12 +1,12 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import type { QueryResultRow } from "pg";
 import { env } from "../../../config/env.js";
 import { pool } from "../../../database/pool.js";
 import { getRegistrationConflict } from "./register.conflict.js";
 import { registerCustomerSchema } from "./register.schema.js";
+import { createSessionToken } from "../session/session-token.js";
 
 interface RegisteredCustomer extends QueryResultRow {
   id: string;
@@ -71,10 +71,10 @@ registerRoutes.post(
 
       const customer = result.rows[0];
       console.log("[Cadastro] Registro persistido no banco de dados.");
-      const token = jwt.sign(
-        { role: customer.role, context: "STORE" },
+      const token = createSessionToken(
+        { userId: customer.id, role: customer.role, context: "STORE" },
         env.JWT_SECRET,
-        { subject: customer.id, expiresIn: env.JWT_EXPIRES_IN_SECONDS },
+        env.JWT_EXPIRES_IN_SECONDS,
       );
 
       response.status(201).json({ user: customer, token });
