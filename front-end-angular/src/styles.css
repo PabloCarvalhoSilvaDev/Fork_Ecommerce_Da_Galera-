@@ -30,3 +30,19 @@ body {
   outline: 2px solid var(--cor-marca);
   outline-offset: 2px;
 }
+
+.link-destaque {
+  color: #c7441d;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.link-destaque:hover {
+  color: #ad3918;
+}
+
+.link-destaque:focus-visible {
+  outline: 2px solid #c7441d;
+  outline-offset: 2px;
+}
