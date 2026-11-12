@@ -143,6 +143,16 @@ CREATE TABLE ecommerce.password_reset_tokens (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Identificadores de sessão revogados até a expiração dos respectivos JWTs.
+CREATE TABLE ecommerce.revoked_tokens (
+    jti UUID PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES ecommerce.users(id) ON DELETE CASCADE,
+    expires_at TIMESTAMPTZ NOT NULL,
+    revoked_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_revoked_tokens_expires_at ON ecommerce.revoked_tokens(expires_at);
+
 -- 4.2. TABELA DE ENDEREÇOS
 CREATE TABLE ecommerce.addresses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -575,9 +585,11 @@ $$;
 GRANT USAGE ON SCHEMA ecommerce TO ecommerce_app_group;
 
 -- Concede apenas leitura, inserção e atualização nas tabelas de negócio.
--- O comando DELETE é omitido propositalmente (exceto em 'order_items' caso o carrinho mude antes de fechar).
+-- DELETE fica restrito a 'order_items' (edição do carrinho) e 'revoked_tokens' (limpeza de sessões expiradas).
 GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA ecommerce TO ecommerce_app_group;
 GRANT DELETE ON ecommerce.order_items TO ecommerce_app_group;
+GRANT DELETE ON ecommerce.revoked_tokens TO ecommerce_app_group;
+REVOKE UPDATE ON ecommerce.revoked_tokens FROM ecommerce_app_group;
 
 -- Permite usar sequências (SERIAL da tabela categories) e executar as Functions transacionais.
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA ecommerce TO ecommerce_app_group;
