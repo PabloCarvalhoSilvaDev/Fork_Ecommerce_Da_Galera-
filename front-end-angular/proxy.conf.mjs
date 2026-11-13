@@ -1,7 +1,5 @@
 /**
- * As telas do Angular usam as mesmas rotas do back (/auth/login, /auth/register...),
- * que também são caminhos da API do Node. Navegação do navegador (GET de HTML)
- * fica com o Angular; o resto (chamadas da API) vai para o Node.
+ * As chamadas da API vão para o Node; rotas de navegação do navegador ficam com o Angular.
  */
 export default {
   '/auth': {
@@ -14,5 +12,21 @@ export default {
       }
       return undefined;
     },
+  },
+  '/catalog': {
+    target: 'http://localhost:3000',
+    secure: false,
+    changeOrigin: true,
+    bypass: (req) => {
+      if (req.method === 'GET' && req.headers.accept?.includes('text/html')) {
+        return '/index.html';
+      }
+      return undefined;
+    },
+  },
+  '/cart': {
+    target: 'http://localhost:3000',
+    secure: false,
+    changeOrigin: true,
   },
 };
