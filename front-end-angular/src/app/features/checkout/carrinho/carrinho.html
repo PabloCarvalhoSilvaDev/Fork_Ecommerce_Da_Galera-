@@ -1,7 +1,13 @@
 <div class="carrinho">
   <app-etapas-checkout [atual]="1" />
 
-  @if (carrinho.vazio()) {
+  @if (carrinho.erro(); as erro) {
+    <p class="aviso" role="alert">{{ erro }}</p>
+  }
+
+  @if (carrinho.carregando()) {
+    <p class="aviso" role="status">Sincronizando carrinho…</p>
+  } @else if (carrinho.vazio()) {
     <div class="vazio cartao">
       <h1 class="titulo-pagina">Seu carrinho está vazio</h1>
       <p class="texto-suave">Os produtos que você adicionar aparecem aqui.</p>
@@ -118,9 +124,7 @@
             </li>
           }
         </ul>
-        <p class="itens__nota texto-suave">
-          O preço unitário fica congelado no momento em que o item entra no carrinho.
-        </p>
+        <p class="itens__nota texto-suave">Preços e estoque são atualizados pelo servidor.</p>
       </section>
 
       <app-resumo-compra
