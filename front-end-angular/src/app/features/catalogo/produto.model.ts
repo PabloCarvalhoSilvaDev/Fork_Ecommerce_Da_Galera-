@@ -6,9 +6,6 @@ export interface Categoria {
   pai?: string;
 }
 
-export type Voltagem = '110v' | '220v' | 'Bivolt';
-export type Tamanho = 'Compacto' | 'Médio' | 'Grande';
-
 export interface CaracteristicaProduto {
   rotulo: string;
   valor: string;
@@ -24,8 +21,8 @@ export interface Produto {
   categoria: string;
   oferta: boolean;
   estoque: number;
-  voltagem: Voltagem;
-  cor: string;
-  tamanho: Tamanho;
+  voltagem: string | null;
+  cor: string | null;
+  tamanho: string | null;
   fichaTecnica: CaracteristicaProduto[];
 }

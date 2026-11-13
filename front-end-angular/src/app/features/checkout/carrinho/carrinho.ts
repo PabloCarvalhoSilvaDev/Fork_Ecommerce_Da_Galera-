@@ -28,6 +28,10 @@ export class Carrinho {
 
   /** Sem login, entra primeiro e volta direto para a entrega. */
   protected continuar(): void {
+    if (this.carrinho.carregando() || this.carrinho.erro()) {
+      return;
+    }
+
     const destino = '/checkout/address';
     if (this.sessao.logado()) {
       this.router.navigateByUrl(destino);

@@ -22,11 +22,11 @@ export class Vitrine {
 
   constructor() {
     inject(CatalogoService)
-      .listar()
+      .listar({ limit: 8 })
       .pipe(takeUntilDestroyed())
       .subscribe({
         next: (produtos) => {
-          this.destaques.set(produtos.slice(0, 8));
+          this.destaques.set(produtos);
           this.carregando.set(false);
         },
         error: () => {
