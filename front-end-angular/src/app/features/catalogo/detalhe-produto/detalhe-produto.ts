@@ -5,7 +5,7 @@ import { catchError, map, of, switchMap, tap } from 'rxjs';
 import { MoedaPipe } from '../../../shared/formatacao/formatacao';
 import { CarrinhoService } from '../../checkout/carrinho/carrinho.service';
 import { CatalogoService, trilhaDaCategoria } from '../catalogo.service';
-import { Produto } from '../produto.model';
+import { Categoria, Produto } from '../produto.model';
 
 @Component({
   selector: 'app-detalhe-produto',
@@ -20,12 +20,14 @@ export class DetalheProduto {
   private readonly router = inject(Router);
 
   protected readonly produto = signal<Produto | null>(null);
+  protected readonly categorias = signal<Categoria[]>([]);
+  protected readonly erroCategorias = signal(false);
   protected readonly carregando = signal(true);
   protected readonly quantidade = signal(1);
 
   protected readonly trilha = computed(() => {
     const produto = this.produto();
-    return produto ? trilhaDaCategoria(produto.categoria) : [];
+    return produto ? trilhaDaCategoria(produto.categoria, this.categorias()) : [];
   });
 
   protected readonly esgotado = computed(() => (this.produto()?.estoque ?? 0) === 0);
@@ -47,6 +49,14 @@ export class DetalheProduto {
   });
 
   constructor() {
+    this.catalogo
+      .listarCategorias()
+      .pipe(takeUntilDestroyed())
+      .subscribe({
+        next: (categorias) => this.categorias.set(categorias),
+        error: () => this.erroCategorias.set(true),
+      });
+
     inject(ActivatedRoute)
       .paramMap.pipe(
         map((params) => params.get('slug') ?? ''),

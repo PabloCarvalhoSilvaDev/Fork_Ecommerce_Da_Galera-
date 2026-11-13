@@ -3,6 +3,9 @@
 } @else if (produto(); as produto) {
   <div class="detalhe">
     <nav class="trilha" aria-label="Trilha">
+      @if (erroCategorias()) {
+        <p class="aviso" role="status">Não foi possível carregar as categorias.</p>
+      }
       <ol>
         <li><a routerLink="/catalog/home">Início</a></li>
         @for (categoria of trilha(); track categoria.slug) {
