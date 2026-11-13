@@ -2,6 +2,8 @@ import cors from "cors";
 import express, { type ErrorRequestHandler } from "express";
 import helmet from "helmet";
 import { corsOrigins } from "../config/env.js";
+import { cartRoutes } from "../modules/cart/cart.routes.js";
+import { catalogRoutes } from "../modules/catalog/catalog.routes.js";
 import { contextRoutes } from "../modules/auth/context/context.routes.js";
 import { loginRoutes } from "../modules/auth/login/login.routes.js";
 import { logoutRoutes } from "../modules/auth/logout/logout.routes.js";
@@ -11,6 +13,31 @@ import { registerRoutes } from "../modules/auth/register/register.routes.js";
 const app = express();
 
 app.disable("x-powered-by");
+app.use((request, response, next) => {
+  const startedAt = process.hrtime.bigint();
+  let recorded = false;
+  const recordRequest = (aborted = false): void => {
+    if (recorded) return;
+    recorded = true;
+    const durationMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+    const prefix = ["/auth", "/catalog", "/cart"].find(
+      (basePath) =>
+        request.originalUrl === basePath ||
+        request.originalUrl.startsWith(`${basePath}/`),
+    );
+    const route = request.route
+      ? `${prefix ?? ""}${String(request.route.path)}`
+      : "unmatched";
+    const status = `${response.statusCode} ${durationMs.toFixed(1)}ms`;
+    const termination = aborted ? " aborted" : "";
+    console.info(`[HTTP] ${request.method} ${route} ${status}${termination}`);
+  };
+  response.once("finish", () => recordRequest());
+  response.once("close", () => {
+    if (!response.writableFinished) recordRequest(true);
+  });
+  next();
+});
 app.use(helmet());
 app.use(
   cors({
@@ -35,6 +62,8 @@ app.use("/auth", loginRoutes);
 app.use("/auth", contextRoutes);
 app.use("/auth", logoutRoutes);
 app.use("/auth", passwordResetRoutes);
+app.use("/catalog", catalogRoutes);
+app.use("/cart", cartRoutes);
 
 app.use((_request, response) => {
   response.status(404).json({ error: "Rota não encontrada" });
