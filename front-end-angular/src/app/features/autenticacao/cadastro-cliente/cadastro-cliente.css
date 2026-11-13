@@ -35,6 +35,11 @@
   color: #c62828;
 }
 
+.cadastro__opcional {
+  color: #796b60;
+  font-weight: 400;
+}
+
 .cadastro__campo input {
   width: 100%;
   min-height: 36px;

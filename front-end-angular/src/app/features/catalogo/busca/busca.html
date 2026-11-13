@@ -1,1 +1,170 @@
-<p>busca works!</p>
+<div class="busca">
+  <aside class="filtros cartao" aria-label="Filtros">
+    <h2 class="filtros__cabecalho">Filtros</h2>
+    <button
+      type="button"
+      class="filtros__alternar"
+      aria-controls="filtros-conteudo"
+      [attr.aria-expanded]="filtrosAbertos()"
+      (click)="filtrosAbertos.set(!filtrosAbertos())"
+    >
+      <svg
+        aria-hidden="true"
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M3 5h18l-7 8v6l-4 2v-8L3 5z"></path>
+      </svg>
+      <span>Filtros</span>
+      @if (filtrosAtivos().length) {
+        <span class="filtros__contador">{{ filtrosAtivos().length }}</span>
+      }
+    </button>
+
+    <div
+      id="filtros-conteudo"
+      class="filtros__conteudo"
+      [class.filtros__conteudo--aberto]="filtrosAbertos()"
+    >
+      <nav class="filtros__grupo" aria-label="Categoria">
+        <span class="filtros__titulo">Categoria</span>
+        <ul class="filtros__categorias">
+          @for (raiz of categoriasRaiz; track raiz.slug) {
+            <li>
+              <a
+                routerLink="/catalog/search"
+                [queryParams]="{ categoria: raiz.slug }"
+                queryParamsHandling="merge"
+                [class.filtros__categoria--ativa]="categoria()?.slug === raiz.slug"
+                [attr.aria-current]="categoria()?.slug === raiz.slug ? 'page' : null"
+                >{{ raiz.nome }}</a
+              >
+              @if (subcategorias(raiz.slug).length) {
+                <ul>
+                  @for (filha of subcategorias(raiz.slug); track filha.slug) {
+                    <li>
+                      <a
+                        routerLink="/catalog/search"
+                        [queryParams]="{ categoria: filha.slug }"
+                        queryParamsHandling="merge"
+                        [class.filtros__categoria--ativa]="categoria()?.slug === filha.slug"
+                        [attr.aria-current]="categoria()?.slug === filha.slug ? 'page' : null"
+                        >{{ filha.nome }}</a
+                      >
+                    </li>
+                  }
+                </ul>
+              }
+            </li>
+          }
+        </ul>
+      </nav>
+
+      @for (grupo of grupos; track grupo.chave) {
+        <fieldset class="filtros__grupo">
+          <legend class="filtros__titulo">{{ grupo.titulo }}</legend>
+          @for (opcao of opcoes()[grupo.chave]; track opcao) {
+            <label class="filtros__opcao">
+              <input
+                type="checkbox"
+                [checked]="selecionados[grupo.chave]().includes(opcao)"
+                (change)="alternar(grupo.chave, opcao)"
+              />
+              {{ opcao }}
+            </label>
+          }
+        </fieldset>
+      }
+
+      <button
+        type="button"
+        class="botao botao--secundario botao--pequeno botao--largo"
+        (click)="limparFiltros()"
+      >
+        Limpar filtros
+      </button>
+    </div>
+  </aside>
+
+  <section class="resultados" aria-labelledby="busca-titulo">
+    <div>
+      <h1 id="busca-titulo" class="titulo-pagina">{{ titulo() }}</h1>
+      @if (!carregando() && !erro()) {
+        <p class="resultados__contagem texto-suave" role="status">
+          {{ resultados().length }} {{ resultados().length === 1 ? 'produto' : 'produtos' }}
+        </p>
+      }
+    </div>
+
+    <div class="resultados__barra">
+      @if (filtrosAtivos().length) {
+        <ul class="ativos" aria-label="Filtros aplicados">
+          @for (filtro of filtrosAtivos(); track filtro.rotulo) {
+            <li>
+              <button
+                type="button"
+                class="ativos__chip"
+                [attr.aria-label]="'Remover filtro ' + filtro.rotulo"
+                (click)="filtro.remover()"
+              >
+                {{ filtro.rotulo }}
+                <svg
+                  aria-hidden="true"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <path d="M6 6l12 12M18 6 6 18"></path>
+                </svg>
+              </button>
+            </li>
+          }
+        </ul>
+      }
+      <label class="ordenar texto-suave">
+        Ordenar
+        <select [value]="ordem()" (change)="ordenar($event)">
+          <option value="relevancia">Mais relevantes</option>
+          <option value="menor-preco">Menor preço</option>
+          <option value="maior-preco">Maior preço</option>
+        </select>
+      </label>
+    </div>
+
+    @if (carregando()) {
+      <p class="aviso" role="status">Carregando produtos…</p>
+    } @else if (erro()) {
+      <p class="aviso aviso--erro" role="alert">
+        Não foi possível carregar os produtos. Tente novamente mais tarde.
+      </p>
+    } @else if (resultados().length === 0) {
+      <div class="vazio cartao">
+        <p><strong>Nenhum produto encontrado.</strong></p>
+        <p class="texto-suave">Tente outro termo ou tire alguns filtros.</p>
+        <button
+          type="button"
+          class="botao botao--secundario botao--pequeno"
+          (click)="limparFiltros()"
+        >
+          Limpar filtros
+        </button>
+      </div>
+    } @else {
+      <ul class="grade">
+        @for (produto of resultados(); track produto.id) {
+          <li><app-cartao-produto [produto]="produto" /></li>
+        }
+      </ul>
+    }
+  </section>
+</div>

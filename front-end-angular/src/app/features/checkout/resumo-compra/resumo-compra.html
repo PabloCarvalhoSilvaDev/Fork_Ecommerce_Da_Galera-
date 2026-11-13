@@ -1,0 +1,18 @@
+<aside class="resumo" aria-labelledby="resumo-compra-titulo">
+  <h2 id="resumo-compra-titulo" class="resumo__titulo">Resumo</h2>
+  <dl class="resumo__linhas">
+    <div class="resumo__linha">
+      <dt>Subtotal ({{ quantidadeItens() }} {{ quantidadeItens() === 1 ? 'item' : 'itens' }})</dt>
+      <dd>{{ subtotal() | moeda }}</dd>
+    </div>
+    <div class="resumo__linha">
+      <dt>Frete</dt>
+      <dd>{{ frete() === 0 ? 'Grátis' : (frete() | moeda) }}</dd>
+    </div>
+    <div class="resumo__linha resumo__linha--total">
+      <dt>Total</dt>
+      <dd>{{ total() | moeda }}</dd>
+    </div>
+  </dl>
+  <ng-content />
+</aside>

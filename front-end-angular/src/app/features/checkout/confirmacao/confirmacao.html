@@ -1,1 +1,114 @@
-<p>confirmacao works!</p>
+<div class="confirmacao">
+  <app-etapas-checkout [atual]="4" />
+
+  @if (carregando()) {
+    <p class="aviso" role="status">Carregando pedido…</p>
+  } @else if (pedido(); as pedido) {
+    <section class="cartao painel" aria-labelledby="confirmacao-titulo">
+      <div class="painel__topo">
+        <span class="painel__icone" aria-hidden="true">
+          <svg
+            width="26"
+            height="26"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="m5 12 5 5 9-10"></path>
+          </svg>
+        </span>
+        <div class="painel__texto">
+          <h1 id="confirmacao-titulo" class="titulo-pagina">Pedido recebido!</h1>
+          <p class="texto-suave">
+            Pedido <span class="painel__codigo">{{ codigo() }}</span> · {{ quantidadeItens() }}
+            {{ quantidadeItens() === 1 ? 'item' : 'itens' }} · Total {{ pedido.total | moeda }}
+          </p>
+        </div>
+        <app-status-pedido [status]="pedido.status" />
+      </div>
+
+      @switch (pedido.pagamento.metodo) {
+        @case ('PIX') {
+          <div class="pagar">
+            <div class="qr" role="img" aria-label="QR code PIX (ilustrativo)">
+              @for (preenchido of quadradosQr(); track $index) {
+                <span [class.qr__ponto]="preenchido"></span>
+              }
+            </div>
+            <div class="pagar__texto">
+              <h2 class="pagar__titulo">Pague com PIX</h2>
+              <p class="texto-suave">
+                Abra o app do seu banco, escolha pagar com PIX e leia o QR code, ou copie o código
+                abaixo. O status muda para <strong>Pago</strong> assim que o pagamento for
+                confirmado.
+              </p>
+              <div class="copiar">
+                <input
+                  class="copiar__codigo"
+                  readonly
+                  [value]="codigoPagamento()"
+                  aria-label="Código PIX copia e cola"
+                />
+                <button type="button" class="botao botao--secundario" (click)="copiar()">
+                  {{ copiado() ? 'Copiado!' : 'Copiar' }}
+                </button>
+              </div>
+              <p class="pagar__nota texto-suave">Código de exemplo: não realiza pagamento.</p>
+            </div>
+          </div>
+        }
+        @case ('BOLETO') {
+          <div class="pagar">
+            <div class="pagar__texto">
+              <h2 class="pagar__titulo">Pague o boleto</h2>
+              <p class="texto-suave">
+                Copie a linha digitável e pague no app do banco ou na lotérica. A compensação leva
+                até 3 dias úteis; depois disso o status muda para <strong>Pago</strong>.
+              </p>
+              <div class="copiar">
+                <input
+                  class="copiar__codigo"
+                  readonly
+                  [value]="codigoPagamento()"
+                  aria-label="Linha digitável do boleto"
+                />
+                <button type="button" class="botao botao--secundario" (click)="copiar()">
+                  {{ copiado() ? 'Copiado!' : 'Copiar' }}
+                </button>
+              </div>
+              <p class="pagar__nota texto-suave">Código de exemplo: não realiza pagamento.</p>
+            </div>
+          </div>
+        }
+        @case ('CREDIT_CARD') {
+          <div class="pagar">
+            <div class="pagar__texto">
+              <h2 class="pagar__titulo">Pagamento aprovado</h2>
+              <p class="texto-suave">
+                O cartão foi aprovado e já estamos separando seu pedido. Você acompanha cada etapa
+                em Meus pedidos.
+              </p>
+            </div>
+          </div>
+        }
+      }
+
+      <div class="painel__acoes">
+        <a class="botao botao--primario" routerLink="/account/orders">Ver meus pedidos</a>
+        <a class="botao botao--secundario" routerLink="/catalog/home">Continuar comprando</a>
+      </div>
+      <p class="visualmente-oculto" aria-live="polite">{{ copiado() ? 'Código copiado.' : '' }}</p>
+    </section>
+  } @else {
+    <div class="cartao painel">
+      <h1 class="titulo-pagina">Pedido não encontrado</h1>
+      <p class="texto-suave">Confira seus pedidos para ver o status mais recente.</p>
+      <div class="painel__acoes">
+        <a class="botao botao--primario" routerLink="/account/orders">Ver meus pedidos</a>
+      </div>
+    </div>
+  }
+</div>

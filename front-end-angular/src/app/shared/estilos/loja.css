@@ -1,0 +1,105 @@
+/*
+ * Peças visuais da loja (protótipo Achei) usadas por várias telas.
+ * Entra no `styleUrls` de cada componente, antes do CSS próprio dele.
+ */
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.botao:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.botao:focus-visible {
+  outline: 2px solid var(--achei-urucum);
+  outline-offset: 2px;
+}
+
+.botao--primario {
+  background: var(--achei-urucum);
+  color: #fff;
+}
+
+.botao--primario:hover:not(:disabled) {
+  background: var(--achei-urucum-escuro);
+  color: #fff;
+}
+
+.botao--secundario {
+  border-color: var(--achei-linha-forte);
+  background: #fff;
+  color: var(--achei-cacau);
+}
+
+.botao--secundario:hover:not(:disabled) {
+  background: var(--achei-areia);
+}
+
+.botao--pequeno {
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+.botao--largo {
+  width: 100%;
+}
+
+.cartao {
+  border: 1px solid var(--achei-linha);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.titulo-pagina {
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: -0.01em;
+}
+
+.texto-suave {
+  color: var(--achei-cacau-suave);
+}
+
+.aviso {
+  margin: 0;
+  color: var(--achei-cacau-suave);
+}
+
+.aviso--erro {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--achei-erro-claro);
+  color: var(--achei-erro);
+}
+
+.imagem-produto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: var(--achei-linha-suave);
+  color: var(--achei-linha-forte);
+}
+
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

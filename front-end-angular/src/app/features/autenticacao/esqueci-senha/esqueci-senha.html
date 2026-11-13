@@ -1,1 +1,70 @@
-<p>esqueci-senha works!</p>
+<section class="acesso" aria-labelledby="esqueci-titulo">
+  <header class="acesso__cabecalho">
+    <h1 id="esqueci-titulo">Esqueceu a senha?</h1>
+    <p>Informe o e-mail da conta e enviaremos um link para criar uma nova senha.</p>
+  </header>
+
+  @if (confirmacao(); as mensagem) {
+    <p class="acesso__caixa acesso__caixa--sucesso" role="status">{{ mensagem }}</p>
+    <p class="acesso__texto">
+      O link vale por tempo limitado e só pode ser usado uma vez. Não chegou? Confira o spam ou
+      <button
+        type="button"
+        class="acesso__link acesso__link--botao"
+        (click)="confirmacao.set(null)"
+      >
+        envie de novo</button
+      >.
+    </p>
+  } @else {
+    <form class="acesso__formulario" (submit)="enviar($event)" novalidate>
+      <div class="acesso__campo" [class.acesso__campo--invalido]="emailInvalido">
+        <label for="email">E-mail</label>
+        <input
+          id="email"
+          type="email"
+          [formControl]="email"
+          autocomplete="email"
+          placeholder="seu@email.com"
+          [attr.aria-invalid]="emailInvalido"
+          aria-describedby="email-erro"
+        />
+        @if (emailInvalido) {
+          <small id="email-erro">Informe um e-mail válido.</small>
+        }
+      </div>
+
+      @if (erro()) {
+        <p class="acesso__caixa acesso__caixa--erro" role="alert">{{ erro() }}</p>
+      }
+
+      <button class="acesso__botao" type="submit" [disabled]="enviando()">
+        {{ enviando() ? 'Enviando…' : 'Enviar link' }}
+      </button>
+    </form>
+
+    <p class="acesso__caixa">
+      <svg
+        aria-hidden="true"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+      >
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 11v5M12 8h.01"></path>
+      </svg>
+      <span>
+        Se esse e-mail estiver cadastrado, o link chega em instantes. Ele vale por tempo limitado e
+        só pode ser usado uma vez.
+      </span>
+    </p>
+  }
+
+  <p class="acesso__rodape">
+    <a class="acesso__link" routerLink="/auth/login">Voltar para o login</a>
+  </p>
+</section>

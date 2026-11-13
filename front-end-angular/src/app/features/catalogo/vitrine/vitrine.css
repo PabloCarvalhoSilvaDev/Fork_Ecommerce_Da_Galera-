@@ -1,0 +1,109 @@
+.vitrine {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  color: var(--achei-cacau);
+}
+
+.destaque {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  overflow: hidden;
+  padding: 40px;
+  border-radius: 24px;
+  background: var(--achei-urucum);
+  color: #fff;
+}
+
+.destaque__enfeite {
+  position: absolute;
+  right: -20px;
+  bottom: -30px;
+}
+
+.destaque__texto {
+  position: relative;
+  max-width: 520px;
+}
+
+.destaque h1 {
+  margin: 0;
+  font-size: 38px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.destaque p {
+  margin: 12px 0 0;
+  font-size: 16px;
+}
+
+.destaque__acao {
+  position: relative;
+  margin-right: 120px;
+  background: var(--achei-areia);
+  color: var(--achei-cacau);
+}
+
+.destaque__acao:hover {
+  background: #fff;
+}
+
+.secao {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.secao__topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.secao__titulo {
+  margin: 0;
+  font-size: 22px;
+}
+
+.secao__link {
+  color: var(--achei-urucum);
+  font-size: 13px;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 599px) {
+  .destaque {
+    padding: 28px 22px;
+  }
+
+  .destaque h1 {
+    font-size: 28px;
+  }
+
+  /* As bolinhas ficariam por cima do texto na tela estreita. */
+  .destaque__enfeite {
+    display: none;
+  }
+
+  .destaque__acao {
+    margin-right: 0;
+  }
+
+  .grade {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}

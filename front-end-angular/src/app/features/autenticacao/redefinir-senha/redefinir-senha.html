@@ -1,1 +1,99 @@
-<p>redefinir-senha works!</p>
+<section class="acesso" aria-labelledby="redefinir-titulo">
+  <header class="acesso__cabecalho">
+    <h1 id="redefinir-titulo">Nova senha</h1>
+    <p>Escolha uma senha que você ainda não usou aqui.</p>
+  </header>
+
+  @if (concluido(); as mensagem) {
+    <p class="acesso__caixa acesso__caixa--sucesso" role="status">{{ mensagem }}</p>
+    <a class="acesso__botao" routerLink="/auth/login">Ir para o login</a>
+  } @else {
+    <form class="acesso__formulario" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+      <div class="acesso__campo" [class.acesso__campo--invalido]="campoInvalido('password')">
+        <label for="senha">Nova senha</label>
+        <div class="acesso__senha">
+          <input
+            id="senha"
+            [type]="senhaVisivel() ? 'text' : 'password'"
+            formControlName="password"
+            autocomplete="new-password"
+            maxlength="72"
+            [attr.aria-invalid]="campoInvalido('password')"
+            aria-describedby="senha-regras"
+          />
+          <button
+            class="acesso__mostrar-senha"
+            type="button"
+            [attr.aria-label]="senhaVisivel() ? 'Ocultar senhas' : 'Mostrar senhas'"
+            [attr.aria-pressed]="senhaVisivel()"
+            (click)="senhaVisivel.set(!senhaVisivel())"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z" />
+              <circle cx="12" cy="12" r="3" />
+              @if (senhaVisivel()) {
+                <path d="m3 3 18 18" />
+              }
+            </svg>
+          </button>
+        </div>
+        <ul id="senha-regras" class="regras" aria-label="Regras da senha">
+          @for (regra of regras(); track regra.rotulo) {
+            <li [class.regras__ok]="regra.ok">
+              <span aria-hidden="true">{{ regra.ok ? '✓' : '•' }}</span>
+              {{ regra.rotulo }}
+              <span class="visualmente-oculto">{{ regra.ok ? '(atendida)' : '(pendente)' }}</span>
+            </li>
+          }
+        </ul>
+      </div>
+
+      <div class="acesso__campo" [class.acesso__campo--invalido]="campoInvalido('confirmPassword')">
+        <label for="confirmar-senha">Confirmar nova senha</label>
+        <input
+          id="confirmar-senha"
+          [type]="senhaVisivel() ? 'text' : 'password'"
+          formControlName="confirmPassword"
+          autocomplete="new-password"
+          maxlength="72"
+          [attr.aria-invalid]="campoInvalido('confirmPassword')"
+          aria-describedby="confirmar-erro"
+        />
+        @if (campoInvalido('confirmPassword')) {
+          <small id="confirmar-erro">
+            {{
+              form.controls.confirmPassword.value
+                ? 'As senhas não conferem.'
+                : 'Confirme a nova senha.'
+            }}
+          </small>
+        }
+      </div>
+
+      @if (erro()) {
+        <p class="acesso__caixa acesso__caixa--erro" role="alert">
+          <span>
+            {{ erro() }}
+            @if (linkInvalido()) {
+              <a routerLink="/auth/forgot">Pedir um novo link</a>
+            }
+          </span>
+        </p>
+      }
+
+      <button class="acesso__botao" type="submit" [disabled]="enviando()">
+        {{ enviando() ? 'Salvando…' : 'Salvar nova senha' }}
+      </button>
+    </form>
+  }
+</section>
