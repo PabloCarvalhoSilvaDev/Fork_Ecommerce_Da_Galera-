@@ -1,9 +1,6 @@
 <div class="principal">
-  <header class="principal__cabecalho">
-    <a routerLink="/" class="principal__marca">E-commerce da Galera</a>
-
-    <span class="principal__usuario">{{ nomeUsuario }}</span>
-  </header>
+  <app-cabecalho />
+  <app-barra-categorias />
 
   <main class="principal__conteudo">
     <router-outlet />

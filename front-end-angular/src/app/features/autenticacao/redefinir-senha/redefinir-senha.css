@@ -1,0 +1,34 @@
+.regras {
+  display: grid;
+  gap: 3px;
+  margin: 2px 0 0;
+  padding: 0;
+  color: #796b60;
+  font-size: 10px;
+  font-weight: 400;
+  list-style: none;
+}
+
+.regras li {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.regras li > span:first-child {
+  width: 12px;
+  font-weight: 700;
+}
+
+.regras__ok {
+  color: #217a3c;
+}
+
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

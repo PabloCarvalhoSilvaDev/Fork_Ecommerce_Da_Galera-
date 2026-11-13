@@ -1,1 +1,82 @@
-<p>escolha-contexto works!</p>
+<section class="acesso" aria-labelledby="contexto-titulo">
+  <header class="acesso__cabecalho">
+    <h1 id="contexto-titulo">
+      Olá{{ primeiroNome() ? ', ' + primeiroNome() : '' }}. Onde você quer entrar?
+    </h1>
+    <p>Sua conta é de administrador. Você pode trocar depois pelo menu.</p>
+  </header>
+
+  <div class="opcoes">
+    <button
+      type="button"
+      class="opcao"
+      [disabled]="enviando() !== null"
+      (click)="escolher('STORE')"
+    >
+      <span class="opcao__icone" aria-hidden="true">
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M3 9l1.5-5h15L21 9M3 9h18M3 9v11h18V9M9 20v-6h6v6"></path>
+        </svg>
+      </span>
+      <span class="opcao__texto">
+        <strong>Loja</strong>
+        <span>Navegar no catálogo, montar carrinho e fazer pedidos como cliente.</span>
+      </span>
+      <span class="opcao__acao">{{
+        enviando() === 'STORE' ? 'Entrando…' : 'Ir para a loja →'
+      }}</span>
+    </button>
+
+    <button
+      type="button"
+      class="opcao"
+      [disabled]="enviando() !== null"
+      (click)="escolher('ADMIN')"
+    >
+      <span class="opcao__icone" aria-hidden="true">
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="3" y="3" width="7" height="9" rx="1"></rect>
+          <rect x="14" y="3" width="7" height="5" rx="1"></rect>
+          <rect x="14" y="12" width="7" height="9" rx="1"></rect>
+          <rect x="3" y="16" width="7" height="5" rx="1"></rect>
+        </svg>
+      </span>
+      <span class="opcao__texto">
+        <strong>Painel administrativo</strong>
+        <span>Gerenciar catálogo, estoque, pedidos, administradores e auditoria.</span>
+      </span>
+      <span class="opcao__acao">{{
+        enviando() === 'ADMIN' ? 'Abrindo…' : 'Abrir o painel →'
+      }}</span>
+    </button>
+  </div>
+
+  @if (erro()) {
+    <p class="acesso__caixa acesso__caixa--erro" role="alert">{{ erro() }}</p>
+  }
+  @if (aviso()) {
+    <p class="acesso__caixa" role="status">{{ aviso() }}</p>
+  }
+
+  <p class="acesso__rodape">
+    <button type="button" class="sair" (click)="sair()">Sair</button>
+  </p>
+</section>

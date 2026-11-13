@@ -1,0 +1,135 @@
+.confirmacao {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 880px;
+  margin: 0 auto;
+  color: var(--achei-cacau);
+}
+
+.painel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 32px;
+}
+
+.painel p {
+  margin: 0;
+}
+
+.painel__topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.painel__icone {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background: var(--achei-mata-claro);
+  color: var(--achei-mata);
+}
+
+.painel__texto {
+  display: flex;
+  flex: 1 1 240px;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.painel__codigo {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
+.painel__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pagar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--achei-linha-suave);
+}
+
+.pagar__texto {
+  display: flex;
+  flex: 1 1 300px;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.pagar__titulo {
+  margin: 0;
+  font-size: 18px;
+}
+
+.pagar__nota {
+  font-size: 12px;
+}
+
+.qr {
+  display: grid;
+  grid-template-columns: repeat(21, 1fr);
+  flex: none;
+  width: 200px;
+  height: 200px;
+  padding: 12px;
+  border: 1px solid var(--achei-linha);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.qr__ponto {
+  background: var(--achei-cacau);
+}
+
+.copiar {
+  display: flex;
+  gap: 8px;
+}
+
+.copiar__codigo {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--achei-linha-forte);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--achei-cacau);
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-size: 13px;
+}
+
+@media (max-width: 599px) {
+  .painel {
+    padding: 22px 18px;
+  }
+
+  .qr {
+    margin: 0 auto;
+  }
+
+  .copiar {
+    flex-direction: column;
+  }
+
+  .copiar__codigo {
+    flex: none;
+  }
+}

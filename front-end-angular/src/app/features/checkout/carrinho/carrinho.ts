@@ -1,11 +1,38 @@
-import { Component } from '@angular/core';
-import { ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { Sessao } from '../../../core/sessao/sessao';
+import { EtapasCheckout } from '../../../shared/etapas-checkout/etapas-checkout';
+import { MoedaPipe } from '../../../shared/formatacao/formatacao';
+import { ResumoCompra } from '../resumo-compra/resumo-compra';
+import { CarrinhoService, ItemCarrinho } from './carrinho.service';
 
 @Component({
   selector: 'app-carrinho',
-  imports: [],
+  imports: [RouterLink, EtapasCheckout, ResumoCompra, MoedaPipe],
   templateUrl: './carrinho.html',
-  styleUrl: './carrinho.css',
+  styleUrls: ['../../../shared/estilos/loja.css', './carrinho.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Carrinho {}
+export class Carrinho {
+  private readonly sessao = inject(Sessao);
+  private readonly router = inject(Router);
+  protected readonly carrinho = inject(CarrinhoService);
+
+  protected alterar(item: ItemCarrinho, delta: number): void {
+    this.carrinho.alterarQuantidade(item.produtoId, item.quantidade + delta);
+  }
+
+  protected remover(item: ItemCarrinho): void {
+    this.carrinho.remover(item.produtoId);
+  }
+
+  /** Sem login, entra primeiro e volta direto para a entrega. */
+  protected continuar(): void {
+    const destino = '/checkout/address';
+    if (this.sessao.logado()) {
+      this.router.navigateByUrl(destino);
+      return;
+    }
+    this.router.navigate(['/auth/login'], { queryParams: { retorno: destino } });
+  }
+}

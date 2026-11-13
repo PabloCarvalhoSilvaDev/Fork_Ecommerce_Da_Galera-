@@ -1,0 +1,8 @@
+.acesso__link--botao {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}

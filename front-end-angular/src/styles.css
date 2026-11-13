@@ -12,6 +12,22 @@
   --cor-texto-invertido: #1a1a1a;
   --cor-borda: #f0c9d0;
   --cor-marca-suave: #fdecef;
+
+  /* Paleta "Achei" do protótipo (design system do canvas da equipe) */
+  --achei-areia: #fbf5ec;
+  --achei-cacau: #2b1b12;
+  --achei-cacau-suave: #6b5446;
+  --achei-urucum: #c2441c;
+  --achei-urucum-escuro: #9e3515;
+  --achei-urucum-claro: #f7dccb;
+  --achei-maracuja: #f2b33d;
+  --achei-mata: #1e6a4d;
+  --achei-mata-claro: #dcefe5;
+  --achei-erro: #a3261b;
+  --achei-erro-claro: #fbe3df;
+  --achei-linha: #e8dccb;
+  --achei-linha-suave: #f1e7da;
+  --achei-linha-forte: #9c8571;
 }
 
 *,

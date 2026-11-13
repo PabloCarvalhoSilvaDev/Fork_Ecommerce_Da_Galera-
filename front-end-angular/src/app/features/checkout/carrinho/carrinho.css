@@ -1,0 +1,224 @@
+.carrinho {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  color: var(--achei-cacau);
+}
+
+.carrinho__colunas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.carrinho__nota {
+  margin: 0;
+  font-size: 13px;
+  text-align: center;
+}
+
+.vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 28px;
+}
+
+.vazio p {
+  margin: 0;
+}
+
+/* Lista de itens: grade de 5 colunas no desktop, cartão empilhado no celular. */
+.itens {
+  flex: 999 1 560px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.itens__lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.itens__cabecalho,
+.item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px 110px 110px 44px;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--achei-linha-suave);
+}
+
+.itens__cabecalho {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  border-bottom-color: var(--achei-linha);
+  background: #fff9f2;
+  color: var(--achei-cacau-suave);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.item {
+  font-size: 14px;
+}
+
+.item__produto {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.item__imagem {
+  flex: none;
+  width: 56px;
+  height: 56px;
+}
+
+.item__texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.item__nome {
+  color: var(--achei-cacau);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.item__nome:hover {
+  color: var(--achei-urucum);
+  text-decoration: underline;
+}
+
+.item__sku {
+  color: var(--achei-cacau-suave);
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-size: 12px;
+}
+
+/* Escondido só visualmente no desktop: o leitor de tela continua lendo. */
+.item__rotulo {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.item__subtotal {
+  font-weight: 600;
+}
+
+.item__remover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: var(--achei-cacau-suave);
+  cursor: pointer;
+}
+
+.item__remover:hover {
+  background: var(--achei-erro-claro);
+  color: var(--achei-erro);
+}
+
+.quantidade {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  height: 36px;
+  border: 1px solid var(--achei-linha-forte);
+  border-radius: 10px;
+}
+
+.quantidade__botao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 100%;
+  border: 0;
+  background: none;
+  color: var(--achei-urucum);
+  cursor: pointer;
+}
+
+.quantidade__botao:disabled {
+  color: var(--achei-linha-forte);
+  cursor: not-allowed;
+}
+
+.quantidade__valor {
+  width: 26px;
+  text-align: center;
+}
+
+.itens__nota {
+  margin: 0;
+  padding: 14px 16px;
+  font-size: 13px;
+}
+
+@media (max-width: 767px) {
+  .itens__cabecalho {
+    display: none;
+  }
+
+  .item {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'produto remover'
+      'quantidade subtotal'
+      'preco preco';
+    row-gap: 10px;
+  }
+
+  .item__produto {
+    grid-area: produto;
+  }
+
+  .item__remover {
+    grid-area: remover;
+  }
+
+  .quantidade {
+    grid-area: quantidade;
+  }
+
+  .item__subtotal {
+    grid-area: subtotal;
+    text-align: right;
+  }
+
+  .item__preco {
+    grid-area: preco;
+    color: var(--achei-cacau-suave);
+    font-size: 12px;
+  }
+
+  .item__rotulo {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    margin-right: 6px;
+    color: var(--achei-cacau-suave);
+    font-size: 12px;
+    font-weight: 400;
+  }
+}
