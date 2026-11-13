@@ -1,4 +1,7 @@
 <div class="busca">
+  @if (erroCategorias()) {
+    <p class="aviso" role="alert">Não foi possível carregar as categorias.</p>
+  }
   <aside class="filtros cartao" aria-label="Filtros">
     <h2 class="filtros__cabecalho">Filtros</h2>
     <button
@@ -35,7 +38,7 @@
       <nav class="filtros__grupo" aria-label="Categoria">
         <span class="filtros__titulo">Categoria</span>
         <ul class="filtros__categorias">
-          @for (raiz of categoriasRaiz; track raiz.slug) {
+          @for (raiz of categoriasRaiz(); track raiz.slug) {
             <li>
               <a
                 routerLink="/catalog/search"
